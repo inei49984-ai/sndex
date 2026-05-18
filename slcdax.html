@@ -1,441 +1,637 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fluxus Z Hub</title>
-  <style>
-    /* ==========================================
-       1. 元のサイトのベースデザイン（黒・リッチテーマ）
-       ========================================== */
-    body {
-      margin: 0;
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      background-color: #0f0f12; /* 高級感のある深い黒 */
-      color: #f0f0f5;
-      overflow-x: hidden;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>slcdax</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Space+Grotesk:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        /* ----------------------------------------------------
+           1. 全体設定
+        ---------------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none; 
+            -webkit-user-select: none;
+            -webkit-touch-callout: none; 
+        }
 
-    /* ヘッダー */
-    header {
-      display: flex;
-      align-items: center;
-      background: linear-gradient(180deg, #16161a 0%, #111115 100%);
-      padding: 15px 20px;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
-      box-sizing: border-box;
-      z-index: 100;
-      border-bottom: 1px solid #232329;
-    }
+        /* PCの時だけOS標準のカーソルを消す */
+        @media (pointer: fine) {
+            * {
+                cursor: none !important;
+            }
+        }
 
-    .menu-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 26px;
-      cursor: pointer;
-      padding: 5px 10px;
-      border-radius: 8px;
-      transition: background 0.2s;
-    }
+        html {
+            scroll-behavior: smooth;
+        }
 
-    .menu-btn:hover {
-      background-color: #232329;
-    }
+        body {
+            background-color: #060b16; 
+            color: #e2e8f0;
+            position: relative;
+            min-height: 180vh; 
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; 
+        }
 
-    .site-title {
-      margin-left: 15px;
-      font-size: 22px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      background: linear-gradient(90deg, #fff, #8a8a98);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+        /* ----------------------------------------------------
+           2. クールブルー・カーソルシステム
+        ---------------------------------------------------- */
+        #cursor-ring {
+            width: 44px;
+            height: 44px;
+            border: 2px solid #00d2ff;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.02);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transform-origin: center center;
+            display: none; 
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, opacity 0.2s,
+                        width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.25),
+                        height 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+        }
 
-    /* メインエリア（余白設定） */
-    main {
-      margin-top: 80px;
-      padding: 40px 20px;
-      min-height: calc(100vh - 80px);
-      box-sizing: border-box;
-    }
+        #cursor-ring.hover {
+            width: 90px;
+            height: 90px;
+            border-color: #ffffff;
+            background: rgba(0, 210, 255, 0.06);
+            box-shadow: 0 0 30px #00d2ff, inset 0 0 15px rgba(0, 210, 255, 0.2);
+        }
 
-    /* 画面切り替え用の基本設定 */
-    .page-view {
-      display: none;
-      max-width: 900px;
-      margin: 0 auto;
-      animation: pageFadeIn 0.25s ease-out;
-    }
+        #cursor-dot-container {
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid rgba(0, 210, 255, 0.6);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
 
-    /* アクティブな画面だけを表示 */
-    .page-view.active {
-      display: block;
-    }
+        #cursor-dot-container::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ffffff, 0 0 12px #00d2ff;
+        }
 
-    @keyframes pageFadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+        .cursor-particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #00d2ff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            box-shadow: 0 0 8px #00d2ff, 0 0 12px #00d2ff;
+            transform: translate(-50%, -50%); 
+            animation: fadeOut 0.4s forwards ease-out;
+        }
 
-    /* ==========================================
-       2. もともとの豪華な配布・解説サイトのUI（復活）
-       ========================================== */
-    .hero-section {
-      text-align: center;
-      padding: 40px 20px;
-      background: radial-gradient(circle at center, #1c1c24 0%, #111115 100%);
-      border-radius: 20px;
-      border: 1px solid #2d2d38;
-      margin-bottom: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
+        }
 
-    .hero-section h1 {
-      font-size: 38px;
-      margin-bottom: 15px;
-      color: #fff;
-      text-shadow: 0 0 15px rgba(255,255,255,0.1);
-    }
+        .touch-ripple {
+            position: fixed;
+            border: 2px solid #00d2ff;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.1);
+            box-shadow: 0 0 15px #00d2ff;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            animation: rippleEffect 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
 
-    .badge {
-      display: inline-block;
-      background-color: #ff4757;
-      color: white;
-      padding: 5px 12px;
-      font-size: 12px;
-      font-weight: bold;
-      border-radius: 20px;
-      margin-bottom: 15px;
-    }
+        @keyframes rippleEffect {
+            0% { width: 0px; height: 0px; opacity: 1; }
+            100% { width: 80px; height: 80px; opacity: 0; }
+        }
 
-    /* カード・コンテンツボックス（元サイトの質感） */
-    .info-card {
-      background-color: #16161a;
-      border: 1px solid #232329;
-      border-radius: 16px;
-      padding: 25px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      text-align: left;
-    }
+        /* ----------------------------------------------------
+           3. 新設：AIチャット風フローティングUIコンソール
+        ---------------------------------------------------- */
+        .ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(3, 6, 13, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-    .info-card h2 {
-      margin-top: 0;
-      color: #00d2d3;
-      font-size: 20px;
-      border-left: 4px solid #00d2d3;
-      padding-left: 10px;
-    }
+        .ui-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-    /* スクリプト等を入れるコードブロック風 */
-    .code-box {
-      background-color: #0a0a0c;
-      border: 1px solid #1c1c24;
-      padding: 15px;
-      border-radius: 8px;
-      font-family: 'Courier New', Courier, monospace;
-      color: #51ff00;
-      overflow-x: auto;
-    }
+        .ui-console {
+            width: 90%;
+            max-width: 680px;
+            background: #0b1326;
+            border: 1px solid rgba(0, 210, 255, 0.25);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 210, 255, 0.1);
+            padding: 30px;
+            position: relative;
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-    /* ==========================================
-       3. Gemini風サイドバー（メニュー選択）
-       ========================================== */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -280px;
-      width: 280px;
-      height: 100%;
-      background-color: #111115;
-      color: #fff;
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 20px;
-      box-sizing: border-box;
-      z-index: 1000;
-      border-right: 1px solid #232329;
-    }
+        .ui-overlay.open .ui-console {
+            transform: scale(1) translateY(0);
+        }
 
-    .sidebar.open {
-      transform: translateX(280px);
-    }
+        /* コンソールのヘッダー */
+        .ui-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
 
-    .sidebar-header {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 25px;
-    }
+        .ui-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #00d2ff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
 
-    .close-btn {
-      background: none;
-      border: none;
-      color: #8a8a98;
-      font-size: 28px;
-      cursor: pointer;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-    }
+        .ui-close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: none;
+            transition: color 0.2s;
+        }
+        .ui-close-btn:hover {
+            color: #ffffff;
+        }
 
-    .close-btn:hover {
-      background-color: #232329;
-      color: #fff;
-    }
+        /* チャット風入力ボックス型コンテナ */
+        .ai-input-container {
+            width: 100%;
+            background: rgba(6, 11, 22, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
 
-    .sidebar-links {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+        .ai-prompt-placeholder {
+            font-size: 20px;
+            font-weight: 500;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
 
-    .menu-item {
-      display: flex;
-      align-items: center;
-      color: #aaa;
-      padding: 14px 18px;
-      text-decoration: none;
-      border-radius: 14px;
-      font-size: 15px;
-      font-weight: 500;
-      transition: all 0.2s;
-      cursor: pointer;
-    }
+        /* ブランドリンク・アイコンエリア */
+        .ai-action-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 15px;
+        }
 
-    .menu-item:hover {
-      background-color: #1c1c24;
-      color: #fff;
-    }
+        .brand-icon-link {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #111a2e;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.25s ease;
+            text-decoration: none;
+        }
 
-    .menu-item::before { margin-right: 15px; }
-    #home-btn::before { content: "🏠"; }
-    #dev-info-btn::before { content: "💬"; }
+        /* SVGアイコンの色調とサイズ調整 */
+        .brand-icon-link svg {
+            width: 22px;
+            height: 22px;
+            fill: #00d2ff;
+            transition: fill 0.25s ease, transform 0.25s ease;
+        }
 
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      display: none;
-      z-index: 999;
-      backdrop-filter: blur(2px);
-    }
+        /* 各アイコンのホバー挙動 */
+        @media (pointer: fine) {
+            .brand-icon-link:hover {
+                background: #00d2ff;
+                border-color: #00d2ff;
+                box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+            }
+            .brand-icon-link:hover svg {
+                fill: #060b16;
+                transform: scale(1.1);
+            }
+        }
 
-    .overlay.show { display: block; }
+        .brand-icon-link:active {
+            transform: scale(0.95);
+        }
 
-    /* ==========================================
-       4. 開発者情報画面（Geminiの新規チャット風）
-       ========================================== */
-    .dev-ui-container {
-      text-align: center;
-      padding: 60px 20px;
-    }
+        /* ----------------------------------------------------
+           4. 各セクションのレイアウト
+        ---------------------------------------------------- */
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 0 20px;
+        }
 
-    .dev-ui-title {
-      font-size: 40px;
-      font-weight: bold;
-      margin-bottom: 40px;
-      background: linear-gradient(45deg, #4285f4, #9b51e0, #e91e63);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            width: 80%;
+            max-width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.06) 0%, rgba(6, 11, 22, 0) 70%);
+            z-index: 0;
+        }
 
-    .links-grid {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      flex-wrap: wrap;
-      margin-bottom: 50px;
-    }
+        .brand-huge {
+            font-size: clamp(65px, 16vw, 220px); 
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -3px;
+            line-height: 0.85;
+            text-transform: lowercase;
+            z-index: 10;
+            text-align: center;
+            transition: transform 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
+            touch-action: manipulation;
+        }
 
-    .sns-card {
-      background-color: #16161a;
-      border: 1px solid #232329;
-      border-radius: 20px;
-      width: 180px;
-      padding: 35px 20px;
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
+        .brand-huge span {
+            color: #00d2ff;
+            text-shadow: 0 0 30px rgba(0, 210, 255, 0.5);
+        }
 
-    .sns-card:hover {
-      transform: translateY(-5px);
-      border-color: #4285f4;
-      box-shadow: 0 8px 30px rgba(66,133,244,0.2);
-    }
+        @media (pointer: fine) {
+            .brand-huge:hover {
+                transform: scale(1.02);
+            }
+        }
 
-    .sns-icon {
-      width: 55px;
-      height: 55px;
-      fill: currentColor;
-    }
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: #24354b;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
 
-    .discord-card { color: #5865F2; }
-    .github-card { color: #fff; }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(6px); }
+        }
 
-    .sns-name {
-      font-size: 16px;
-      font-weight: bold;
-      color: #fff;
-    }
+        .content-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 24px;
+            text-align: center;
+            z-index: 10;
+        }
 
-    .dev-footer-box {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #16161a;
-      border: 1px solid #232329;
-      border-radius: 20px;
-      padding: 20px 25px;
-      color: #8a8a98;
-      font-size: 14px;
-      text-align: left;
-      line-height: 1.6;
-    }
-  </style>
+        .site-description {
+            font-size: clamp(16px, 4vw, 22px); 
+            color: #94a3b8;
+            max-width: 650px;
+            line-height: 1.8;
+            letter-spacing: 1px;
+            margin-bottom: 50px;
+            font-weight: 400;
+        }
+
+        .service-action-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 800px;
+        }
+
+        .action-trigger {
+            background: rgba(0, 210, 255, 0.02);
+            color: #00d2ff;
+            border: 1px solid #00d2ff;
+            padding: 16px 36px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
+            transition: all 0.25s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-primary:hover {
+            background: #ffffff;
+            color: #060b16;
+            border-color: #ffffff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 210, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        @media (pointer: fine) {
+            .btn-secondary:hover {
+                background: rgba(255, 255, 255, 0.05);
+                border-color: #00d2ff;
+                color: #00d2ff;
+                box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+                transform: translateY(-2px);
+            }
+        }
+
+        .action-trigger:active {
+            transform: translateY(1px) scale(0.96);
+        }
+
+        .footer-signature-container {
+            margin-top: auto; 
+            width: 100%;
+            padding: 60px 0 50px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #03060d; 
+            border-top: 1px solid rgba(255, 255, 255, 0.01);
+        }
+
+        .brand-signature {
+            font-family: 'Alex Brush', cursive;
+            font-size: clamp(38px, 6vw, 65px);
+            color: #94a3b8;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-align: center;
+            opacity: 0.7;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (pointer: fine) {
+            .brand-signature:hover {
+                opacity: 1;
+                color: #ffffff;
+                letter-spacing: 5px;
+                text-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            }
+        }
+
+        .signature-sub {
+            font-size: 10px;
+            color: #24354b;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- メニュー用暗幕 -->
-  <div id="overlay" class="overlay"></div>
+    <div id="cursor-ring"></div>
+    <div id="cursor-dot-container"></div>
 
-  <!-- ヘッダー -->
-  <header>
-    <button id="menu-toggle" class="menu-btn">☰</button>
-    <div class="site-title" id="header-title">Fluxus Z Hub</div>
-  </header>
-
-  <!-- 左側サイドバー（Gemini風選択画面） -->
-  <div id="sidebar" class="sidebar">
-    <div class="sidebar-header">
-      <button id="close-btn" class="close-btn">×</button>
-    </div>
-    <div class="sidebar-links">
-      <div id="home-btn" class="menu-item">ホーム</div>
-      <div id="dev-info-btn" class="menu-item">開発者情報</div>
-    </div>
-  </div>
-
-  <!-- メインコンテンツ -->
-  <main>
-    
-    <!-- 1. 【復活】もともとの豪華なメインUI画面 -->
-    <div id="page-home" class="page-view active">
-      
-      <!-- ヒーローセクション -->
-      <div class="hero-section">
-        <span class="badge">UPDATED</span>
-        <h1>Fluxus Z Executor & Scripts</h1>
-        <p>最新のスクリプトハブや、安全なダウンロード情報を提供しています。</p>
-      </div>
-
-      <!-- 解説カード1 -->
-      <div class="info-card">
-        <h2>Fluxus Z の概要</h2>
-        <p>モバイル向けに最適化された高性能スクリプト実行環境です。対策パッチに対応した最新のAPKファイル情報をまとめています。</p>
-      </div>
-
-      <!-- 解説カード2（スクリプトコード配布枠の例） -->
-      <div class="info-card">
-        <h2>おすすめスクリプト (Speed Hub / Mozi Hub)</h2>
-        <p>以下のコードをエグゼキューターに貼り付けて実行してください。</p>
-        <div class="code-box">
-          loadstring(game:HttpGet("https://raw.githubusercontent.com/..."))()
+    <!-- ----------------------------------------------------
+       UIコンソール（AIチャット入力画面風ポップアップ）
+    ---------------------------------------------------- -->
+    <div class="ui-overlay" id="ui-overlay">
+        <div class="ui-console">
+            <div class="ui-header">
+                <span class="ui-title">System Console</span>
+                <button class="ui-close-btn" id="ui-close-btn">✕</button>
+            </div>
+            <div class="ai-input-container">
+                <div class="ai-prompt-placeholder">制作者の情報にアクセスしますか？</div>
+                <div class="ai-action-bar">
+                    <!-- Discord アイコンボタン -->
+                    <a href="https://discord.com/users/あなたのID" target="_blank" class="brand-icon-link" title="Discord">
+                        <svg viewBox="0 0 127.14 96.36">
+                            <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.72-11A68.55,68.55,0,0,1,28,80.47c1-.72,2-1.47,3-2.25a74.55,74.55,0,0,0,65.3,0c1,.78,2,1.53,3,2.25a68.55,68.55,0,0,1-10.74,4.9,74.37,74.37,0,0,0,6.72,11,105.73,105.73,0,0,0,31.29-18.83C130.23,48.22,123.66,25.43,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.93,46,53.82,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.17,46,96.06,53,91,65.69,84.69,65.69Z"/>
+                        </svg>
+                    </a>
+                    <!-- GitHub アイコンボタン -->
+                    <a href="https://github.com/inei49984-ai" target="_blank" class="brand-icon-link" title="GitHub">
+                        <svg viewBox="0 0 98 96">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.261 33.4 46.754 2.443.453 3.332-.1 3.332-2.372 0-1.17-.04-4.269-.062-8.38-13.59 2.978-16.458-6.611-16.458-6.611-2.222-5.692-5.424-7.207-5.424-7.207-4.434-3.055.336-2.995.336-2.995 4.903.348 7.484 5.086 7.484 5.086 4.359 7.534 11.432 5.358 14.217 4.095.442-3.187 1.705-5.361 3.102-6.594-10.85-1.243-22.256-5.474-22.256-24.378 0-5.387 1.905-9.79 5.039-13.239-.504-1.25-2.184-6.269.477-13.06 0 0 4.113-1.328 13.473 5.068 3.908-1.096 8.099-1.644 12.263-1.663 4.159.019 8.354.567 12.27 1.663 9.347-6.396 13.447-5.068 13.447-5.068 2.67 6.791.99 11.81.487 13.06 3.14 3.449 5.033 7.852 5.033 13.239 0 18.952-11.425 23.121-22.31 24.339 1.756 1.527 3.322 4.529 3.322 9.127 0 6.591-.06 11.907-.06 13.525 0 2.292.876 4.861 3.364 4.374C84.025 89.467 98 70.97 98 49.217 98 22 76.155 0 48.854 0z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
         </div>
-      </div>
-
     </div>
 
-    <!-- 2. 開発者情報画面（Geminiの新規入力画面風UI） -->
-    <div id="page-developer" class="page-view">
-      <div class="dev-ui-container">
+    <div class="hero-section">
+        <h1 class="brand-huge">slcdax<span>.</span></h1>
+        <div class="scroll-indicator">↓ Scroll Down</div>
+    </div>
+
+    <div class="content-section">
+        <p class="site-description">
+            多目的で開発者の意図によってサービスが提供されます。
+        </p>
         
-        <div class="dev-ui-title">Developer Links</div>
-        
-        <div class="links-grid">
-          <!-- Discord -->
-          <a href="https://discord.gg/" target="_blank" class="sns-card discord-card">
-            <svg class="sns-icon" viewBox="0 0 127.14 96.36">
-              <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.72-10.93,68.6,68.6,0,0,1-10.64-5.12c.91-.66,1.8-1.34,2.66-2a75.58,75.58,0,0,0,72.74,0c.86.68,1.75,1.36,2.66,2a68.7,68.7,0,0,1-10.63,5.11,74.74,74.74,0,0,0,6.72,10.94,105.73,105.73,0,0,0,31.06-18.83C129.8,49.61,123.76,26.75,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/>
-            </svg>
-            <span class="sns-name">Discord</span>
-          </a>
-
-          <!-- GitHub -->
-          <a href="https://github.com/" target="_blank" class="sns-card github-card">
-            <svg class="sns-icon" viewBox="0 0 16 16">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-            </svg>
-            <span class="sns-name">GitHub</span>
-          </a>
+        <div class="service-action-group">
+            <button class="action-trigger btn-secondary" id="creator-info-btn">
+                制作者の情報
+            </button>
+            <button class="action-trigger btn-primary" id="test-dl-btn">
+                testのダウンロード
+            </button>
         </div>
-
-        <div class="dev-footer-box">
-          ℹ️ 質問やスクリプトのバグ報告、最新の対応状況については上記のDiscordコミュニティ、またはGitHubまでお問い合わせください。
-        </div>
-
-      </div>
     </div>
 
-  </main>
+    <div class="footer-signature-container">
+        <h2 class="brand-signature">Slcdax</h2>
+        <p class="signature-sub">AUTHENTIC SIGNATURE</p>
+    </div>
 
-  <!-- ==========================================
-     5. JavaScript（表示切り替えの制御）
-     ========================================== -->
-  <script>
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidebar = document.getElementById('sidebar');
-    const closeBtn = document.getElementById('close-btn');
-    const overlay = document.getElementById('overlay');
-    
-    const homeBtn = document.getElementById('home-btn');
-    const devInfoBtn = document.getElementById('dev-info-btn');
-    
-    const pageHome = document.getElementById('page-home');
-    const pageDeveloper = document.getElementById('page-developer');
-    const headerTitle = document.getElementById('header-title');
+    <script>
+        const ring = document.getElementById('cursor-ring');
+        const dotContainer = document.getElementById('cursor-dot-container');
+        
+        let mouseX = 0; let mouseY = 0;
+        let ringX = 0; let ringY = 0;
+        
+        const delaySpeed = 0.06;
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-    // サイドバーを開く
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.add('open');
-      overlay.classList.add('show');
-    });
+        if (!isTouchDevice) {
+            ring.style.display = 'block';
+            dotContainer.style.display = 'flex';
 
-    // サイドバーを閉じる
-    closeBtn.addEventListener('click', closeSidebar);
-    overlay.addEventListener('click', closeSidebar);
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                
+                dotContainer.style.left = mouseX + 'px';
+                dotContainer.style.top = mouseY + 'px';
+                
+                ring.style.opacity = '1';
+                dotContainer.style.opacity = '1';
 
-    function closeSidebar() {
-      sidebar.classList.remove('open');
-      overlay.classList.remove('show');
-    }
+                createParticle(mouseX, mouseY);
+            });
 
-    // 「ホーム」をクリック
-    homeBtn.addEventListener('click', () => {
-      pageDeveloper.classList.remove('active');
-      pageHome.classList.add('active'); // 元の豪華なUIを表示
-      headerTitle.textContent = "Fluxus Z Hub";
-      closeSidebar();
-    });
+            document.addEventListener('mouseleave', () => { ring.style.opacity = '0'; dotContainer.style.opacity = '0'; });
+            document.addEventListener('mouseenter', () => { ring.style.opacity = '1'; dotContainer.style.opacity = '1'; });
 
-    // 「開発者情報」をクリック
-    devInfoBtn.addEventListener('click', () => {
-      pageHome.classList.remove('active');
-      pageDeveloper.classList.add('active'); // Gemini風のSNSリンクUIを表示
-      headerTitle.textContent = "New Chat - Dev";
-      closeSidebar();
-    });
-  </script>
+            function animateCursor() {
+                ringX += (mouseX - ringX) * delaySpeed;
+                ringY += (mouseY - ringY) * delaySpeed;
+                ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+                requestAnimationFrame(animateCursor);
+            }
+            requestAnimationFrame(animateCursor);
 
+            const refreshHover = () => {
+                const targets = document.querySelectorAll('.brand-huge, .action-trigger, .brand-signature, .brand-icon-link, .ui-close-btn');
+                targets.forEach(el => {
+                    el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+                    el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+                });
+            };
+            refreshHover();
+
+            function createParticle(x, y) {
+                if (Math.abs(mouseX - ringX) < 1 && Math.abs(mouseY - ringY) < 1) return;
+                const particle = document.createElement('div');
+                particle.classList.add('cursor-particle');
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 400); 
+            }
+        } else {
+            window.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                createTouchRipple(touch.clientX, touch.clientY);
+                createMobileParticle(touch.clientX, touch.clientY);
+            }, { passive: true });
+        }
+
+        function createTouchRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.classList.add('touch-ripple');
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 500);
+        }
+
+        function createMobileParticle(x, y) {
+            for(let i=0; i<3; i++) {
+                const p = document.createElement('div');
+                p.classList.add('cursor-particle');
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 400);
+            }
+        }
+
+        /* ----------------------------------------------------
+           UIコンソール ポップアップ制御ロジック
+        ---------------------------------------------------- */
+        const creatorInfoBtn = document.getElementById('creator-info-btn');
+        const uiOverlay = document.getElementById('ui-overlay');
+        const uiCloseBtn = document.getElementById('ui-close-btn');
+
+        // 「制作者の情報」ボタンクリックでUIを出現させる
+        creatorInfoBtn.addEventListener('click', () => {
+            uiOverlay.classList.add('open');
+        });
+
+        // ✕ボタンクリックでUIを閉じる
+        uiCloseBtn.addEventListener('click', () => {
+            uiOverlay.classList.remove('open');
+            if (ring) ring.classList.remove('hover');
+        });
+
+        // コンソールの外枠（背景の暗がり）をクリックしたときも自動で閉じる
+        uiOverlay.addEventListener('click', (e) => {
+            if (e.target === uiOverlay) {
+                uiOverlay.classList.remove('open');
+                if (ring) ring.classList.remove('hover');
+            }
+        });
+
+        // txtファイル自動生成・自動ダウンロード
+        document.getElementById('test-dl-btn').addEventListener('click', () => {
+            const textContent = "お？このファイルダウンロードしたね？てすとだよてすと！";
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, textContent], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'test.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
 </body>
 </html>
