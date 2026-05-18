@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fluxus Z配布・解説サイト</title>
+  <title>Fluxus Z Hub</title>
   <style>
     /* ==========================================
        1. 全体の基本スタイル（Gemini風ダークテーマ）
@@ -11,26 +11,26 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #131314; /* ダーク背景 */
+      background-color: #131314; /* Geminiの背景色 */
       color: #e3e3e3;
+      overflow-x: hidden;
     }
 
-    /* ヘッダー（ナビゲーションバー） */
+    /* ヘッダー */
     header {
       display: flex;
       align-items: center;
       background-color: #1e1f20;
       padding: 15px 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
       position: fixed;
       width: 100%;
       top: 0;
       left: 0;
       box-sizing: border-box;
       z-index: 100;
+      border-bottom: 1px solid #2d2f31;
     }
 
-    /* 3本線メニューボタン */
     .menu-btn {
       background: none;
       border: none;
@@ -46,55 +46,35 @@
       background-color: #333537;
     }
 
-    /* サイトタイトル */
     .site-title {
       margin-left: 15px;
       font-size: 20px;
       font-weight: 600;
-    }
-
-    /* メインコンテンツ表示エリア */
-    main {
-      margin-top: 80px;
-      padding: 40px 20px;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-      text-align: center;
-    }
-
-    .content-box {
-      background-color: #1e1f20;
-      padding: 30px;
-      border-radius: 12px;
-      border: 1px solid #444746;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      color: #fff;
     }
 
     /* ==========================================
-       2. サイドバーメニュー（Gemini風チャット選択画面）
+       2. Gemini風サイドバー（チャット選択画面）
        ========================================== */
     .sidebar {
       position: fixed;
       top: 0;
-      left: -280px; /* 最初は画面の左外に隠す */
+      left: -280px;
       width: 280px;
       height: 100%;
       background-color: #1e1f20;
       color: #e3e3e3;
-      transition: transform 0.3s ease; /* スッと出てくるアニメーション */
+      transition: transform 0.25s ease;
       padding: 20px;
       box-sizing: border-box;
-      box-shadow: 4px 0 15px rgba(0,0,0,0.5);
       z-index: 1000;
+      border-right: 1px solid #2d2f31;
     }
 
-    /* サイドバーが開いた状態（JSでこのクラスを付与する） */
     .sidebar.open {
-      transform: translateX(280px); /* 画面内にスライド */
+      transform: translateX(280px);
     }
 
-    /* サイドバー内のヘッダー（×ボタンなど） */
     .sidebar-header {
       display: flex;
       justify-content: flex-end;
@@ -117,25 +97,23 @@
 
     .close-btn:hover {
       background-color: #333537;
-      color: #fff;
     }
 
-    /* メニュー項目の一覧 */
     .sidebar-links {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    /* 各選択ボタン（Geminiのチャット履歴風） */
+    /* メニューアイテム（Geminiのチャット履歴項目風） */
     .menu-item {
       display: flex;
       align-items: center;
-      color: #e3e3e3;
+      color: #c4c7c5;
       padding: 14px 16px;
       text-decoration: none;
-      border-radius: 20px; /* 丸みのあるGemini風デザイン */
-      font-size: 15px;
+      border-radius: 20px;
+      font-size: 14px;
       font-weight: 500;
       transition: background 0.2s, color 0.2s;
       cursor: pointer;
@@ -146,23 +124,21 @@
       color: #fff;
     }
 
-    /* アイコン用のスペース（必要に応じて文字の前に配置可能） */
     .menu-item::before {
       margin-right: 12px;
-      font-size: 18px;
+      font-size: 16px;
     }
     #home-btn::before { content: "🏠"; }
-    #github-btn::before { content: "💻"; }
-    #dev-info-btn::before { content: "👤"; }
+    #dev-info-btn::before { content: "💬"; } /* チャット風アイコン */
 
-    /* 背景の暗幕（サイドバーが開いている時に後ろを暗くする） */
+    /* メニュー展開時の背景の暗幕 */
     .overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgba(0, 0, 0, 0.4);
       display: none;
       z-index: 999;
     }
@@ -172,153 +148,201 @@
     }
 
     /* ==========================================
-       3. 開発者情報のポップアップ（モダールウインドウ）
+       3. メイン画面の切り替えエリア
        ========================================== */
-    .modal {
-      display: none; /* 最初は非表示 */
-      position: fixed;
-      z-index: 2000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      align-items: center;
-      justify-content: center;
+    main {
+      margin-top: 75px;
+      padding: 40px 20px;
+      min-height: calc(100vh - 75px);
+      box-sizing: border-box;
     }
 
-    /* ポップアップが表示された時の状態 */
-    .modal.show {
-      display: flex;
+    /* 画面切り替え用の基本クラス（最初は非表示） */
+    .page-view {
+      display: none;
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeIn 0.3s ease-in-out;
     }
 
-    .modal-content {
-      background-color: #282a2c;
-      color: #e3e3e3;
-      padding: 30px;
-      width: 90%;
-      max-width: 450px;
-      border-radius: 16px;
-      border: 1px solid #444746;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      position: relative;
-      text-align: left;
-      animation: fadeIn 0.2s ease-out;
+    /* アクティブな画面だけを表示する */
+    .page-view.active {
+      display: block;
     }
 
     @keyframes fadeIn {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .modal-content h2 {
-      margin-top: 0;
-      font-size: 22px;
+    /* --- [A] ホーム画面の見た目 --- */
+    .content-box {
+      background-color: #1e1f20;
+      padding: 40px;
+      border-radius: 24px;
+      border: 1px solid #444746;
+      text-align: center;
+    }
+
+    /* --- [B] 新しい開発者情報画面（Geminiの新規チャット風） --- */
+    .dev-ui-container {
+      text-align: center;
+      padding-top: 40px;
+    }
+
+    /* Geminiの「今日はどんなことをお手伝いしましょうか？」風のグラデーション文字 */
+    .dev-ui-title {
+      font-size: 36px;
+      font-weight: 600;
+      margin-bottom: 40px;
+      background: linear-gradient(45deg, #4285f4, #9b51e0, #e91e63);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* アイコンを並べるコンテナ */
+    .links-grid {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    /* Discord / GitHub のカード型ボタン */
+    .sns-card {
+      background-color: #1e1f20;
+      border: 1px solid #444746;
+      border-radius: 16px;
+      width: 160px;
+      padding: 30px 20px;
+      text-decoration: none;
       color: #fff;
-      border-bottom: 1px solid #444746;
-      padding-bottom: 10px;
-    }
-
-    .modal-close-btn {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: none;
-      border: none;
-      color: #c4c7c5;
-      font-size: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
       cursor: pointer;
     }
 
-    .modal-close-btn:hover {
-      color: #fff;
+    .sns-card:hover {
+      transform: translateY(-4px);
+      background-color: #25272a;
+      border-color: #74a2ff;
     }
 
-    .info-item {
-      margin: 15px 0;
-      font-size: 15px;
-      line-height: 1.6;
+    /* 各種ブランドアイコン（SVGで綺麗に表示） */
+    .sns-icon {
+      width: 50px;
+      height: 50px;
+      fill: currentColor;
     }
 
-    .info-item strong {
-      color: #74a2ff;
+    /* Discordの色 */
+    .discord-card { color: #5865F2; }
+    /* GitHubの色 */
+    .github-card { color: #f0f6fc; }
+
+    .sns-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e3e3e3;
     }
 
-    .info-item a {
-      color: #74a2ff;
-      text-decoration: none;
-    }
-    .info-item a:hover {
-      text-decoration: underline;
+    /* 下部のメッセージ入力欄風のデザイン（装飾） */
+    .dev-footer-box {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #1e1f20;
+      border: 1px solid #444746;
+      border-radius: 28px;
+      padding: 15px 25px;
+      color: #9aa0a6;
+      font-size: 14px;
+      text-align: left;
     }
   </style>
 </head>
 <body>
 
-  <!-- 暗幕（サイドバー裏の黒背景） -->
+  <!-- メニュー用暗幕 -->
   <div id="overlay" class="overlay"></div>
 
-  <!-- ヘッダーエリア -->
+  <!-- ヘッダー -->
   <header>
     <button id="menu-toggle" class="menu-btn">☰</button>
-    <div class="site-title">Fluxus Z Hub</div>
+    <div class="site-title" id="header-title">Fluxus Z Hub</div>
   </header>
 
-  <!-- 左側から飛び出すサイドバーメニュー -->
+  <!-- 左側サイドバー（Geminiのチャット履歴風選択画面） -->
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
       <button id="close-btn" class="close-btn">×</button>
     </div>
-    
-    <!-- メニュー選択項目一覧（Geminiのチャット選択風） -->
     <div class="sidebar-links">
-      <!-- 1. ホームボタン（現在のページの上部 / index.html等へ遷移） -->
-      <a href="#" id="home-btn" class="menu-item">ホーム</a>
-      
-      <!-- 2. 外部リンク（GitHubなど） -->
-      <a href="https://github.com/" target="_blank" id="github-btn" class="menu-item">GitHub</a>
-      
-      <!-- 3. 新しく追加した「開発者情報」ボタン -->
+      <!-- ホーム切り替え -->
+      <div id="home-btn" class="menu-item">ホーム</div>
+      <!-- 開発者情報UI切り替え -->
       <div id="dev-info-btn" class="menu-item">開発者情報</div>
     </div>
   </div>
 
-  <!-- メインコンテンツ（サイト本文） -->
+  <!-- メインコンテンツ表示エリア -->
   <main>
-    <div id="home" class="content-box">
-      <h1>Fluxus Z 公式サイトへようこそ</h1>
-      <p>左上の3本線（☰）メニューを押すと、各種項目や開発者情報を選択できます。</p>
+    
+    <!-- 1. ホーム画面（デフォルトで表示） -->
+    <div id="page-home" class="page-view active">
+      <div class="content-box">
+        <h1>Fluxus Z 解説・配布サイト</h1>
+        <p>メニューから「開発者情報」を選択すると、新しいチャットUIが開きます。</p>
+      </div>
     </div>
+
+    <!-- 2. 開発者情報画面（Geminiの新規入力画面風UI） -->
+    <div id="page-developer" class="page-view">
+      <div class="dev-ui-container">
+        
+        <!-- Gemini風の大きなタイトル -->
+        <div class="dev-ui-title">Developer Links</div>
+        
+        <!-- Discord & GitHub 選択カード -->
+        <div class="links-grid">
+          
+          <!-- Discordリンク -->
+          <a href="https://discord.gg/" target="_blank" class="sns-card discord-card">
+            <!-- DiscordのSVGアイコン -->
+            <svg class="sns-icon" viewBox="0 0 127.14 96.36">
+              <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.72-10.93,68.6,68.6,0,0,1-10.64-5.12c.91-.66,1.8-1.34,2.66-2a75.58,75.58,0,0,0,72.74,0c.86.68,1.75,1.36,2.66,2a68.7,68.7,0,0,1-10.63,5.11,74.74,74.74,0,0,0,6.72,10.94,105.73,105.73,0,0,0,31.06-18.83C129.8,49.61,123.76,26.75,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/>
+            </svg>
+            <span class="sns-name">Discord Server</span>
+          </a>
+
+          <!-- GitHubリンク -->
+          <a href="https://github.com/" target="_blank" class="sns-card github-card">
+            <!-- GitHubのSVGアイコン -->
+            <svg class="sns-icon" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            <span class="sns-name">GitHub Profile</span>
+          </a>
+
+        </div>
+
+        <!-- Geminiの入力バーを模したテキストボックス風デザイン -->
+        <div class="dev-footer-box">
+          ℹ️ 質問やスクリプトのバグ報告はDiscordコミュニティ、またはGitHubのIssueまでお願いします。
+        </div>
+
+      </div>
+    </div>
+
   </main>
 
-  <!-- 開発者情報のポップアップ画面（モダール） -->
-  <div id="developer-modal" class="modal">
-    <div class="modal-content">
-      <button id="modal-close" class="modal-close-btn">×</button>
-      <h2>開発者情報 (Developer)</h2>
-      
-      <div class="info-item">
-        <strong>名前:</strong> 管理者 / デベロッパー
-      </div>
-      <div class="info-item">
-        <strong>活動内容:</strong><br>
-        Fluxus Zの解説、スクリプト（Speed Hub、Mozi Hub等）の動作検証・最適化。
-      </div>
-      <div class="info-item">
-        <strong>公式GitHub:</strong> <a href="https://github.com/" target="_blank">リンクを開く</a>
-      </div>
-      <div class="info-item">
-        <strong>一言:</strong><br>
-        サイトのデザイン修正や最新スクリプトの更新情報を随時お届けします。
-      </div>
-    </div>
-  </div>
-
   <!-- ==========================================
-     4. JavaScript制御（メニュー開閉・画面切り替え）
+     4. JavaScript（画面の切り替え制御）
      ========================================== -->
   <script>
-    // 要素の取得
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const closeBtn = document.getElementById('close-btn');
@@ -326,52 +350,42 @@
     
     const homeBtn = document.getElementById('home-btn');
     const devInfoBtn = document.getElementById('dev-info-btn');
-    const developerModal = document.getElementById('developer-modal');
-    const modalClose = document.getElementById('modal-close');
+    
+    // 画面の要素
+    const pageHome = document.getElementById('page-home');
+    const pageDeveloper = document.getElementById('page-developer');
+    const headerTitle = document.getElementById('header-title');
 
-    // --- サイドバーの開閉処理 ---
-    // 3本線ボタンを押した時
+    // --- サイドバー開閉 ---
     menuToggle.addEventListener('click', () => {
       sidebar.classList.add('open');
       overlay.classList.add('show');
     });
 
-    // サイドバー内の「×」ボタンを押した時
     closeBtn.addEventListener('click', closeSidebar);
-
-    // 暗幕（メニュー以外の背景）をクリックした時も閉じる
-    overlay.addEventListener('click', () => {
-      closeSidebar();
-      closeModalFunc();
-    });
+    overlay.addEventListener('click', closeSidebar);
 
     function closeSidebar() {
       sidebar.classList.remove('open');
       overlay.classList.remove('show');
     }
 
-    // --- メニュー項目のクリック処理 ---
-    // ホームボタンを押した時
-    homeBtn.addEventListener('click', (e) => {
-      // ページ内リンクの動作（トップへ戻る）
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      closeSidebar(); // メニューを閉じる
+    // --- 画面切り替え処理 ---
+    // 「ホーム」が押された時
+    homeBtn.addEventListener('click', () => {
+      pageDeveloper.classList.remove('active'); // 開発者画面を消す
+      pageHome.classList.add('active');         // ホームを表示
+      headerTitle.textContent = "Fluxus Z Hub";  // タイトル戻す
+      closeSidebar();
     });
 
-    // 開発者情報ボタンを押した時
+    // 「開発者情報」が押された時
     devInfoBtn.addEventListener('click', () => {
-      sidebar.classList.remove('open'); // サイドバーを閉じる
-      developerModal.classList.add('show'); // ポップアップを出す
-      overlay.classList.add('show'); // 背景を暗く保つ
+      pageHome.classList.remove('active');       // ホームを消す
+      pageDeveloper.classList.add('active');    // 開発者画面を表示
+      headerTitle.textContent = "New Chat - Dev"; // タイトルをGemini風に変更
+      closeSidebar();
     });
-
-    // ポップアップの「×」ボタンを押した時
-    modalClose.addEventListener('click', closeModalFunc);
-
-    function closeModalFunc() {
-      developerModal.classList.remove('show');
-      overlay.classList.remove('show');
-    }
   </script>
 
 </body>
