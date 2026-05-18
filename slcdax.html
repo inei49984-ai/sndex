@@ -168,7 +168,6 @@
         .bar-mid { width: 20px; }
         .bar-bot { width: 25px; }
 
-        /* ホバー時に三本線の長さが美しく揃う演出 */
         @media (pointer: fine) {
             .header-menu-trigger:hover .menu-bar {
                 background-color: #00d2ff;
@@ -430,21 +429,6 @@
             transform: translateY(-2px);
         }
 
-        .btn-secondary {
-            border-color: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-        }
-
-        @media (pointer: fine) {
-            .btn-secondary:hover {
-                background: rgba(255, 255, 255, 0.05);
-                border-color: #00d2ff;
-                color: #00d2ff;
-                box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
-                transform: translateY(-2px);
-            }
-        }
-
         .action-trigger:active {
             transform: translateY(1px) scale(0.96);
         }
@@ -541,9 +525,6 @@
         </p>
         
         <div class="service-action-group">
-            <button class="action-trigger btn-secondary" id="creator-info-btn">
-                制作者の情報
-            </button>
             <button class="action-trigger btn-primary" id="test-dl-btn">
                 testのダウンロード
             </button>
@@ -642,18 +623,15 @@
         /* ----------------------------------------------------
            UIコンソール ポップアップ制御ロジック
         ---------------------------------------------------- */
-        const creatorInfoBtn = document.getElementById('creator-info-btn');
-        const globalMenuBtn = document.getElementById('global-menu-btn'); // 三本線ボタン
+        const globalMenuBtn = document.getElementById('global-menu-btn'); 
         const uiOverlay = document.getElementById('ui-overlay');
         const uiCloseBtn = document.getElementById('ui-close-btn');
 
-        // コンソールを開く関数
+        // コンソールを開く
         const openConsole = () => {
             uiOverlay.classList.add('open');
         };
 
-        // 「制作者の情報」ボタンと「右上の三本線ボタン」の両方に紐付け
-        creatorInfoBtn.addEventListener('click', openConsole);
         globalMenuBtn.addEventListener('click', openConsole);
 
         // ✕ボタンクリックでUIを閉じる
