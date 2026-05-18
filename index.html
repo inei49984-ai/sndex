@@ -9,16 +9,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Space+Grotesk:wght@400;900&display=swap" rel="stylesheet">
     <style>
         /* ----------------------------------------------------
-           1. 全体設定（スマホでの誤作動・拡大防止）
+           1. 全体設定
         ---------------------------------------------------- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none; /* UI感を強めるために文字選択を禁止 */
+            user-select: none; 
             -webkit-user-select: none;
-            -webkit-touch-callout: none; /* スマホ長押しメニューを禁止 */
+            -webkit-touch-callout: none; 
         }
 
         /* PCの時だけOS標準のカーソルを消す */
@@ -33,13 +33,13 @@
         }
 
         body {
-            background-color: #060b16; /* 深いディープネイビー */
+            background-color: #060b16; 
             color: #e2e8f0;
             position: relative;
-            min-height: 160vh; /* スマホでも心地よいスクロール感を持たせる高さ */
+            min-height: 180vh; /* 少し中身が増えたので心地よい高さを確保 */
             display: flex;
             flex-direction: column;
-            overflow-x: hidden; /* スマホで横揺れ・横スクロールするのを完全に防ぐ */
+            overflow-x: hidden; 
         }
 
         /* ----------------------------------------------------
@@ -60,7 +60,7 @@
             opacity: 0;
             transform: translate(-50%, -50%);
             transform-origin: center center;
-            display: none; /* 初期状態は非表示（JSでPC判定なら表示） */
+            display: none; 
             transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, opacity 0.2s,
                         width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25),
                         height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
@@ -101,7 +101,6 @@
             box-shadow: 0 0 8px #ffffff, 0 0 12px #00d2ff;
         }
 
-        /* 移動時の光の粒子 */
         .cursor-particle {
             position: fixed;
             width: 4px;
@@ -116,12 +115,12 @@
         }
 
         @keyframes fadeOut {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); }
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
             100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
         }
 
         /* ----------------------------------------------------
-           2.5 スマホタップ用の波紋エフェクト（NEW）
+           2.5 スマホタップ用の波紋エフェクト
         ---------------------------------------------------- */
         .touch-ripple {
             position: fixed;
@@ -141,7 +140,7 @@
         }
 
         /* ----------------------------------------------------
-           3. 各セクションのレイアウト（レスポンシブ対応）
+           3. 各セクションのレイアウト
         ---------------------------------------------------- */
         /* 第1画面：メインヒーロー */
         .hero-section {
@@ -163,9 +162,8 @@
             z-index: 0;
         }
 
-        /* 【スマホ調整】文字サイズを画面幅に合わせて最適化 */
         .brand-huge {
-            font-size: clamp(65px, 16vw, 220px); /* スマホ（最小65px）〜PCまで可変 */
+            font-size: clamp(65px, 16vw, 220px); 
             font-weight: 900;
             color: #ffffff;
             letter-spacing: -3px;
@@ -174,7 +172,6 @@
             z-index: 10;
             text-align: center;
             transition: transform 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
-            /* スマホでのタップ反応を良くする設定 */
             touch-action: manipulation;
         }
 
@@ -183,7 +180,6 @@
             text-shadow: 0 0 30px rgba(0, 210, 255, 0.5);
         }
 
-        /* PCの時だけホバーで拡大 */
         @media (pointer: fine) {
             .brand-huge:hover {
                 transform: scale(1.02);
@@ -205,33 +201,43 @@
             50% { opacity: 1; transform: translateY(6px); }
         }
 
-        /* 中間：コンテンツセクション（説明文 ＆ DLボタン） */
+        /* 中間：コンテンツセクション（多目的仕様に進化） */
         .content-section {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 80px 24px;
+            padding: 100px 24px;
             text-align: center;
             z-index: 10;
         }
 
+        /* 【修正】多目的で開発者の意図を伝えるステートメント文章 */
         .site-description {
-            font-size: clamp(15px, 4vw, 22px); /* スマホ対応のフォントサイズ */
+            font-size: clamp(16px, 4vw, 22px); 
             color: #94a3b8;
-            max-width: 600px;
+            max-width: 650px;
             line-height: 1.8;
             letter-spacing: 1px;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
             font-weight: 400;
         }
 
-        /* ダウンロードボタン */
-        .download-trigger {
-            background: rgba(0, 210, 255, 0.03);
+        /* ボタンを並べるコンテナ（PCなら横並び、スマホなら縦並び） */
+        .service-action-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 800px;
+        }
+
+        /* 共通ボタンベース */
+        .action-trigger {
+            background: rgba(0, 210, 255, 0.02);
             color: #00d2ff;
             border: 1px solid #00d2ff;
-            padding: 16px 40px;
+            padding: 16px 36px;
             border-radius: 30px;
             font-size: 14px;
             font-weight: bold;
@@ -240,24 +246,35 @@
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
             transition: all 0.25s ease;
             touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent; /* スマホタップ時のグレーの影を消す */
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* PCホバー時のみ発光 */
+        /* メインのダウンロードボタン（白く発光） */
+        .btn-primary:hover {
+            background: #ffffff;
+            color: #060b16;
+            border-color: #ffffff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 210, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* 追加された謎の多目的ボタン（青く静かに発光） */
+        .btn-secondary {
+            border-color: rgba(0, 210, 255, 0.4);
+            color: rgba(0, 210, 255, 0.7);
+        }
         @media (pointer: fine) {
-            .download-trigger:hover {
-                background: #ffffff;
-                color: #060b16;
-                border-color: #ffffff;
-                box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 210, 255, 0.4);
+            .btn-secondary:hover {
+                background: rgba(0, 210, 255, 0.1);
+                color: #00d2ff;
+                border-color: #00d2ff;
+                box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
                 transform: translateY(-2px);
             }
         }
 
-        /* スマホ・PC共通のタップ/クリックした瞬間 */
-        .download-trigger:active {
+        .action-trigger:active {
             transform: translateY(1px) scale(0.96);
-            background: rgba(0, 210, 255, 0.2);
         }
 
         /* 最下部：ミニサインエリア */
@@ -315,11 +332,22 @@
 
     <div class="content-section">
         <p class="site-description">
-            このサイトはファイルなどを提供しています。
+            多目的で開発者の意図によってサービスが提供されます。
         </p>
-        <button class="download-trigger" id="test-dl-btn">
-            testのダウンロード
-        </button>
+        
+        <div class="service-action-group">
+            <button class="action-trigger btn-primary" id="test-dl-btn">
+                testのダウンロード
+            </button>
+            
+            <button class="action-trigger btn-secondary" onclick="alert('このサービスは開発者の意図により、現在アップデートを待機しています。')">
+                Service //02
+            </button>
+
+            <button class="action-trigger btn-secondary" onclick="alert('このサービスは開発者の意図により、現在アップデートを待機しています。')">
+                Service //03
+            </button>
+        </div>
     </div>
 
     <div class="footer-signature-container">
@@ -335,11 +363,9 @@
         let ringX = 0; let ringY = 0;
         const delaySpeed = 0.13;
 
-        // PC（マウス環境）かスマホ（タッチ環境）かを判定するフラグ
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         if (!isTouchDevice) {
-            // 【PC用の処理】カーソルを表示して動かす
             ring.style.display = 'block';
             dotContainer.style.display = 'flex';
 
@@ -367,16 +393,15 @@
             }
             requestAnimationFrame(animateCursor);
 
-            // PCホバー拡大効果の紐付け
-            const interactiveElements = [
-                document.querySelector('.brand-huge'),
-                document.querySelector('#test-dl-btn'),
-                document.querySelector('.brand-signature')
-            ];
-            interactiveElements.forEach(el => {
-                el.addEventListener('mouseenter', () => ring.classList.add('hover'));
-                el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
-            });
+            // 動的にホバーイベントを設定
+            const refreshHover = () => {
+                const targets = document.querySelectorAll('.brand-huge, .action-trigger, .brand-signature');
+                targets.forEach(el => {
+                    el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+                    el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+                });
+            };
+            refreshHover();
 
             function createParticle(x, y) {
                 if (Math.abs(mouseX - ringX) < 1 && Math.abs(mouseY - ringY) < 1) return;
@@ -388,7 +413,6 @@
                 setTimeout(() => particle.remove(), 400); 
             }
         } else {
-            // 【スマホ用の処理】画面をタップした場所に波紋エフェクトを咲かせる
             window.addEventListener('touchstart', (e) => {
                 const touch = e.touches[0];
                 createTouchRipple(touch.clientX, touch.clientY);
@@ -396,7 +420,6 @@
             }, { passive: true });
         }
 
-        // スマホ用波紋生成
         function createTouchRipple(x, y) {
             const ripple = document.createElement('div');
             ripple.classList.add('touch-ripple');
@@ -406,9 +429,8 @@
             setTimeout(() => ripple.remove(), 500);
         }
 
-        // スマホ用タップ時スパーク（粒子）
         function createMobileParticle(x, y) {
-            for(let i=0; i<3; i++) { // タップ時に3粒ハジける
+            for(let i=0; i<3; i++) {
                 const p = document.createElement('div');
                 p.classList.add('cursor-particle');
                 p.style.left = x + 'px';
