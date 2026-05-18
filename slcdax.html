@@ -1,625 +1,378 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>slcdax</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Space+Grotesk:wght@400;900&display=swap" rel="stylesheet">
-    <style>
-        /* ----------------------------------------------------
-           1. 全体設定
-        ---------------------------------------------------- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none; 
-            -webkit-user-select: none;
-            -webkit-touch-callout: none; 
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fluxus Z配布・解説サイト</title>
+  <style>
+    /* ==========================================
+       1. 全体の基本スタイル（Gemini風ダークテーマ）
+       ========================================== */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #131314; /* ダーク背景 */
+      color: #e3e3e3;
+    }
 
-        /* PCの時だけOS標準のカーソルを消す */
-        @media (pointer: fine) {
-            * {
-                cursor: none !important;
-            }
-        }
+    /* ヘッダー（ナビゲーションバー） */
+    header {
+      display: flex;
+      align-items: center;
+      background-color: #1e1f20;
+      padding: 15px 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      box-sizing: border-box;
+      z-index: 100;
+    }
 
-        html {
-            scroll-behavior: smooth;
-        }
+    /* 3本線メニューボタン */
+    .menu-btn {
+      background: none;
+      border: none;
+      color: #e3e3e3;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
 
-        body {
-            background-color: #060b16; 
-            color: #e2e8f0;
-            position: relative;
-            min-height: 180vh; 
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden; 
-        }
+    .menu-btn:hover {
+      background-color: #333537;
+    }
 
-        /* ----------------------------------------------------
-           2. クールブルー・カーソルシステム
-        ---------------------------------------------------- */
-        #cursor-ring {
-            width: 44px;
-            height: 44px;
-            border: 2px solid #00d2ff;
-            border-radius: 50%;
-            background: rgba(0, 210, 255, 0.02);
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            transform: translate(-50%, -50%);
-            transform-origin: center center;
-            display: none; 
-            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, opacity 0.2s,
-                        width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.25),
-                        height 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.25);
-        }
+    /* サイトタイトル */
+    .site-title {
+      margin-left: 15px;
+      font-size: 20px;
+      font-weight: 600;
+    }
 
-        #cursor-ring.hover {
-            width: 90px;
-            height: 90px;
-            border-color: #ffffff;
-            background: rgba(0, 210, 255, 0.06);
-            box-shadow: 0 0 30px #00d2ff, inset 0 0 15px rgba(0, 210, 255, 0.2);
-        }
+    /* メインコンテンツ表示エリア */
+    main {
+      margin-top: 80px;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
 
-        #cursor-dot-container {
-            width: 14px;
-            height: 14px;
-            border: 1.5px solid rgba(0, 210, 255, 0.6);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 10000;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            transform: translate(-50%, -50%);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
-        }
+    .content-box {
+      background-color: #1e1f20;
+      padding: 30px;
+      border-radius: 12px;
+      border: 1px solid #444746;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
 
-        #cursor-dot-container::before {
-            content: '';
-            width: 5px;
-            height: 5px;
-            background-color: #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #ffffff, 0 0 12px #00d2ff;
-        }
+    /* ==========================================
+       2. サイドバーメニュー（Gemini風チャット選択画面）
+       ========================================== */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -280px; /* 最初は画面の左外に隠す */
+      width: 280px;
+      height: 100%;
+      background-color: #1e1f20;
+      color: #e3e3e3;
+      transition: transform 0.3s ease; /* スッと出てくるアニメーション */
+      padding: 20px;
+      box-sizing: border-box;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
 
-        .cursor-particle {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: #00d2ff;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            box-shadow: 0 0 8px #00d2ff, 0 0 12px #00d2ff;
-            transform: translate(-50%, -50%); 
-            animation: fadeOut 0.4s forwards ease-out;
-        }
+    /* サイドバーが開いた状態（JSでこのクラスを付与する） */
+    .sidebar.open {
+      transform: translateX(280px); /* 画面内にスライド */
+    }
 
-        @keyframes fadeOut {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
-        }
+    /* サイドバー内のヘッダー（×ボタンなど） */
+    .sidebar-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
 
-        .touch-ripple {
-            position: fixed;
-            border: 2px solid #00d2ff;
-            border-radius: 50%;
-            background: rgba(0, 210, 255, 0.1);
-            box-shadow: 0 0 15px #00d2ff;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            animation: rippleEffect 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
-        }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #c4c7c5;
+      font-size: 28px;
+      cursor: pointer;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        @keyframes rippleEffect {
-            0% { width: 0px; height: 0px; opacity: 1; }
-            100% { width: 80px; height: 80px; opacity: 0; }
-        }
+    .close-btn:hover {
+      background-color: #333537;
+      color: #fff;
+    }
 
-        /* ----------------------------------------------------
-           2.8 【新設】右上の3本線（ハンバーガーメニュー）ボタン
-        ---------------------------------------------------- */
-        .menu-toggle-btn {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            background: rgba(6, 11, 22, 0.7);
-            border: 1px solid rgba(0, 210, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            z-index: 2000;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
+    /* メニュー項目の一覧 */
+    .sidebar-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-        .menu-line {
-            width: 20px;
-            height: 20px;
-            height: 2px;
-            background-color: #00d2ff;
-            border-radius: 2px;
-            transition: all 0.3s cubic-bezier(0.1, 0.8, 0.3, 1);
-        }
+    /* 各選択ボタン（Geminiのチャット履歴風） */
+    .menu-item {
+      display: flex;
+      align-items: center;
+      color: #e3e3e3;
+      padding: 14px 16px;
+      text-decoration: none;
+      border-radius: 20px; /* 丸みのあるGemini風デザイン */
+      font-size: 15px;
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s;
+      cursor: pointer;
+    }
 
-        /* メニューが開いている時の3本線のクロスアニメーション */
-        .menu-toggle-btn.active .menu-line:nth-child(1) {
-            transform: translateY(7px) rotate(45deg);
-            background-color: #ffffff;
-        }
-        .menu-toggle-btn.active .menu-line:nth-child(2) {
-            opacity: 0;
-        }
-        .menu-toggle-btn.active .menu-line:nth-child(3) {
-            transform: translateY(-7px) rotate(-45deg);
-            background-color: #ffffff;
-        }
+    .menu-item:hover {
+      background-color: #333537;
+      color: #fff;
+    }
 
-        /* ----------------------------------------------------
-           2.9 【新設】スライド式メニューボード
-        ---------------------------------------------------- */
-        .side-menu-panel {
-            position: fixed;
-            top: 0;
-            right: -320px; /* 初期状態は右側に隠す */
-            width: 320px;
-            height: 100vh;
-            background: rgba(3, 6, 13, 0.95);
-            border-left: 1px solid rgba(0, 210, 255, 0.1);
-            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-            z-index: 1900;
-            padding: 100px 30px 40px 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
+    /* アイコン用のスペース（必要に応じて文字の前に配置可能） */
+    .menu-item::before {
+      margin-right: 12px;
+      font-size: 18px;
+    }
+    #home-btn::before { content: "🏠"; }
+    #github-btn::before { content: "💻"; }
+    #dev-info-btn::before { content: "👤"; }
 
-        .side-menu-panel.open {
-            right: 0; /* 画面内に出現 */
-        }
+    /* 背景の暗幕（サイドバーが開いている時に後ろを暗くする） */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 999;
+    }
 
-        /* メニュー内の大項目（制作者の情報） */
-        .menu-item-trigger {
-            width: 100%;
-            background: none;
-            border: none;
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: left;
-            padding: 15px 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            letter-spacing: 1px;
-            touch-action: manipulation;
-        }
+    .overlay.show {
+      display: block;
+    }
 
-        .menu-item-trigger::after {
-            content: '↓';
-            font-size: 14px;
-            color: #00d2ff;
-            transition: transform 0.3s ease;
-        }
+    /* ==========================================
+       3. 開発者情報のポップアップ（モダールウインドウ）
+       ========================================== */
+    .modal {
+      display: none; /* 最初は非表示 */
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      align-items: center;
+      justify-content: center;
+    }
 
-        .menu-item-trigger.active::after {
-            transform: rotate(180deg); /* 展開時に矢印を反転 */
-        }
+    /* ポップアップが表示された時の状態 */
+    .modal.show {
+      display: flex;
+    }
 
-        /* アコーディオン展開する中身（Discord / GitHub） */
-        .menu-sub-content {
-            max-height: 0; /* 初期状態は高さをゼロにして隠す */
-            overflow: hidden;
-            transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding-left: 10px;
-        }
+    .modal-content {
+      background-color: #282a2c;
+      color: #e3e3e3;
+      padding: 30px;
+      width: 90%;
+      max-width: 450px;
+      border-radius: 16px;
+      border: 1px solid #444746;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      position: relative;
+      text-align: left;
+      animation: fadeIn 0.2s ease-out;
+    }
 
-        .menu-sub-content.show {
-            max-height: 150px; /* 展開時の最大高さ制限 */
-            margin-top: 5px;
-        }
+    @keyframes fadeIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
 
-        /* SNSリンクボタン */
-        .sns-link-btn {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            padding: 12px 20px;
-            border-radius: 20px;
-            background: rgba(0, 210, 255, 0.03);
-            border: 1px solid rgba(0, 210, 255, 0.2);
-            color: #00d2ff;
-            font-size: 14px;
-            font-weight: bold;
-            text-decoration: none;
-            letter-spacing: 1px;
-            transition: all 0.25s ease;
-            touch-action: manipulation;
-        }
+    .modal-content h2 {
+      margin-top: 0;
+      font-size: 22px;
+      color: #fff;
+      border-bottom: 1px solid #444746;
+      padding-bottom: 10px;
+    }
 
-        /* 各SNSブランドカラーによる微かなホバー光効果 */
-        @media (pointer: fine) {
-            .sns-link-btn:hover {
-                background: #ffffff;
-                color: #060b16;
-                border-color: #ffffff;
-                box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-            }
-        }
+    .modal-close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: #c4c7c5;
+      font-size: 24px;
+      cursor: pointer;
+    }
 
-        .sns-link-btn:active {
-            transform: scale(0.97);
-        }
+    .modal-close-btn:hover {
+      color: #fff;
+    }
 
-        /* ----------------------------------------------------
-           3. 各セクションのレイアウト
-        ---------------------------------------------------- */
-        .hero-section {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 0 20px;
-        }
+    .info-item {
+      margin: 15px 0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
 
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            width: 80%;
-            max-width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(0, 210, 255, 0.06) 0%, rgba(6, 11, 22, 0) 70%);
-            z-index: 0;
-        }
+    .info-item strong {
+      color: #74a2ff;
+    }
 
-        .brand-huge {
-            font-size: clamp(65px, 16vw, 220px); 
-            font-weight: 900;
-            color: #ffffff;
-            letter-spacing: -3px;
-            line-height: 0.85;
-            text-transform: lowercase;
-            z-index: 10;
-            text-align: center;
-            transition: transform 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
-            touch-action: manipulation;
-        }
-
-        .brand-huge span {
-            color: #00d2ff;
-            text-shadow: 0 0 30px rgba(0, 210, 255, 0.5);
-        }
-
-        @media (pointer: fine) {
-            .brand-huge:hover {
-                transform: scale(1.02);
-            }
-        }
-
-        .scroll-indicator {
-            position: absolute;
-            bottom: 40px;
-            font-size: 11px;
-            letter-spacing: 4px;
-            color: #24354b;
-            text-transform: uppercase;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; transform: translateY(0); }
-            50% { opacity: 1; transform: translateY(6px); }
-        }
-
-        .content-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 100px 24px;
-            text-align: center;
-            z-index: 10;
-        }
-
-        .site-description {
-            font-size: clamp(16px, 4vw, 22px); 
-            color: #94a3b8;
-            max-width: 650px;
-            line-height: 1.8;
-            letter-spacing: 1px;
-            margin-bottom: 50px;
-            font-weight: 400;
-        }
-
-        .service-action-group {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 800px;
-        }
-
-        .action-trigger {
-            background: rgba(0, 210, 255, 0.02);
-            color: #00d2ff;
-            border: 1px solid #00d2ff;
-            padding: 16px 36px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
-            transition: all 0.25s ease;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn-primary:hover {
-            background: #ffffff;
-            color: #060b16;
-            border-color: #ffffff;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 210, 255, 0.4);
-            transform: translateY(-2px);
-        }
-
-        .action-trigger:active {
-            transform: translateY(1px) scale(0.96);
-        }
-
-        .footer-signature-container {
-            margin-top: auto; 
-            width: 100%;
-            padding: 60px 0 50px 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #03060d; 
-            border-top: 1px solid rgba(255, 255, 255, 0.01);
-        }
-
-        .brand-signature {
-            font-family: 'Alex Brush', cursive;
-            font-size: clamp(38px, 6vw, 65px);
-            color: #94a3b8;
-            font-weight: 300;
-            letter-spacing: 1px;
-            text-align: center;
-            opacity: 0.7;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @media (pointer: fine) {
-            .brand-signature:hover {
-                opacity: 1;
-                color: #ffffff;
-                letter-spacing: 5px;
-                text-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
-            }
-        }
-
-        .signature-sub {
-            font-size: 10px;
-            color: #24354b;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-    </style>
+    .info-item a {
+      color: #74a2ff;
+      text-decoration: none;
+    }
+    .info-item a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
-    <div id="cursor-ring"></div>
-    <div id="cursor-dot-container"></div>
+  <!-- 暗幕（サイドバー裏の黒背景） -->
+  <div id="overlay" class="overlay"></div>
 
-    <button class="menu-toggle-btn" id="menu-btn">
-        <span class="menu-line"></span>
-        <span class="menu-line"></span>
-        <span class="menu-line"></span>
-    </button>
+  <!-- ヘッダーエリア -->
+  <header>
+    <button id="menu-toggle" class="menu-btn">☰</button>
+    <div class="site-title">Fluxus Z Hub</div>
+  </header>
 
-    <div class="side-menu-panel" id="menu-panel">
-        <button class="menu-item-trigger" id="accordion-toggle">
-            制作者の情報
-        </button>
-        <div class="menu-sub-content" id="accordion-content">
-            <a href="https://discord.com/users/あなたのID" target="_blank" class="sns-link-btn">
-                <span>Discord Profile</span>
-            </a>
-            <a href="https://github.com/inei49984-ai" target="_blank" class="sns-link-btn">
-                <span>GitHub Profile</span>
-            </a>
-        </div>
+  <!-- 左側から飛び出すサイドバーメニュー -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <button id="close-btn" class="close-btn">×</button>
     </div>
-
-    <div class="hero-section">
-        <h1 class="brand-huge">slcdax<span>.</span></h1>
-        <div class="scroll-indicator">↓ Scroll Down</div>
+    
+    <!-- メニュー選択項目一覧（Geminiのチャット選択風） -->
+    <div class="sidebar-links">
+      <!-- 1. ホームボタン（現在のページの上部 / index.html等へ遷移） -->
+      <a href="#" id="home-btn" class="menu-item">ホーム</a>
+      
+      <!-- 2. 外部リンク（GitHubなど） -->
+      <a href="https://github.com/" target="_blank" id="github-btn" class="menu-item">GitHub</a>
+      
+      <!-- 3. 新しく追加した「開発者情報」ボタン -->
+      <div id="dev-info-btn" class="menu-item">開発者情報</div>
     </div>
+  </div>
 
-    <div class="content-section">
-        <p class="site-description">
-            多目的で開発者の意図によってサービスが提供されます。
-        </p>
-        
-        <div class="service-action-group">
-            <button class="action-trigger btn-primary" id="test-dl-btn">
-                testのダウンロード
-            </button>
-        </div>
+  <!-- メインコンテンツ（サイト本文） -->
+  <main>
+    <div id="home" class="content-box">
+      <h1>Fluxus Z 公式サイトへようこそ</h1>
+      <p>左上の3本線（☰）メニューを押すと、各種項目や開発者情報を選択できます。</p>
     </div>
+  </main>
 
-    <div class="footer-signature-container">
-        <h2 class="brand-signature">Slcdax</h2>
-        <p class="signature-sub">AUTHENTIC SIGNATURE</p>
+  <!-- 開発者情報のポップアップ画面（モダール） -->
+  <div id="developer-modal" class="modal">
+    <div class="modal-content">
+      <button id="modal-close" class="modal-close-btn">×</button>
+      <h2>開発者情報 (Developer)</h2>
+      
+      <div class="info-item">
+        <strong>名前:</strong> 管理者 / デベロッパー
+      </div>
+      <div class="info-item">
+        <strong>活動内容:</strong><br>
+        Fluxus Zの解説、スクリプト（Speed Hub、Mozi Hub等）の動作検証・最適化。
+      </div>
+      <div class="info-item">
+        <strong>公式GitHub:</strong> <a href="https://github.com/" target="_blank">リンクを開く</a>
+      </div>
+      <div class="info-item">
+        <strong>一言:</strong><br>
+        サイトのデザイン修正や最新スクリプトの更新情報を随時お届けします。
+      </div>
     </div>
+  </div>
 
-    <script>
-        const ring = document.getElementById('cursor-ring');
-        const dotContainer = document.getElementById('cursor-dot-container');
-        
-        let mouseX = 0; let mouseY = 0;
-        let ringX = 0; let ringY = 0;
-        
-        // フィードバック遅延（ぬるぬる粘り気のある引きずり感）
-        const delaySpeed = 0.06;
+  <!-- ==========================================
+     4. JavaScript制御（メニュー開閉・画面切り替え）
+     ========================================== -->
+  <script>
+    // 要素の取得
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const closeBtn = document.getElementById('close-btn');
+    const overlay = document.getElementById('overlay');
+    
+    const homeBtn = document.getElementById('home-btn');
+    const devInfoBtn = document.getElementById('dev-info-btn');
+    const developerModal = document.getElementById('developer-modal');
+    const modalClose = document.getElementById('modal-close');
 
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    // --- サイドバーの開閉処理 ---
+    // 3本線ボタンを押した時
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.add('open');
+      overlay.classList.add('show');
+    });
 
-        if (!isTouchDevice) {
-            ring.style.display = 'block';
-            dotContainer.style.display = 'flex';
+    // サイドバー内の「×」ボタンを押した時
+    closeBtn.addEventListener('click', closeSidebar);
 
-            window.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                
-                dotContainer.style.left = mouseX + 'px';
-                dotContainer.style.top = mouseY + 'px';
-                
-                ring.style.opacity = '1';
-                dotContainer.style.opacity = '1';
+    // 暗幕（メニュー以外の背景）をクリックした時も閉じる
+    overlay.addEventListener('click', () => {
+      closeSidebar();
+      closeModalFunc();
+    });
 
-                createParticle(mouseX, mouseY);
-            });
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    }
 
-            document.addEventListener('mouseleave', () => { ring.style.opacity = '0'; dotContainer.style.opacity = '0'; });
-            document.addEventListener('mouseenter', () => { ring.style.opacity = '1'; dotContainer.style.opacity = '1'; });
+    // --- メニュー項目のクリック処理 ---
+    // ホームボタンを押した時
+    homeBtn.addEventListener('click', (e) => {
+      // ページ内リンクの動作（トップへ戻る）
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      closeSidebar(); // メニューを閉じる
+    });
 
-            function animateCursor() {
-                ringX += (mouseX - ringX) * delaySpeed;
-                ringY += (mouseY - ringY) * delaySpeed;
-                ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
-                requestAnimationFrame(animateCursor);
-            }
-            requestAnimationFrame(animateCursor);
+    // 開発者情報ボタンを押した時
+    devInfoBtn.addEventListener('click', () => {
+      sidebar.classList.remove('open'); // サイドバーを閉じる
+      developerModal.classList.add('show'); // ポップアップを出す
+      overlay.classList.add('show'); // 背景を暗く保つ
+    });
 
-            // ホバー対象を動的に監視
-            const refreshHover = () => {
-                const targets = document.querySelectorAll('.brand-huge, .action-trigger, .brand-signature, #menu-btn, .menu-item-trigger, .sns-link-btn');
-                targets.forEach(el => {
-                    el.addEventListener('mouseenter', () => ring.classList.add('hover'));
-                    el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
-                });
-            };
-            refreshHover();
+    // ポップアップの「×」ボタンを押した時
+    modalClose.addEventListener('click', closeModalFunc);
 
-            function createParticle(x, y) {
-                if (Math.abs(mouseX - ringX) < 1 && Math.abs(mouseY - ringY) < 1) return;
-                const particle = document.createElement('div');
-                particle.classList.add('cursor-particle');
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 400); 
-            }
-        } else {
-            window.addEventListener('touchstart', (e) => {
-                const touch = e.touches[0];
-                createTouchRipple(touch.clientX, touch.clientY);
-                createMobileParticle(touch.clientX, touch.clientY);
-            }, { passive: true });
-        }
+    function closeModalFunc() {
+      developerModal.classList.remove('show');
+      overlay.classList.remove('show');
+    }
+  </script>
 
-        function createTouchRipple(x, y) {
-            const ripple = document.createElement('div');
-            ripple.classList.add('touch-ripple');
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            document.body.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 500);
-        }
-
-        function createMobileParticle(x, y) {
-            for(let i=0; i<3; i++) {
-                const p = document.createElement('div');
-                p.classList.add('cursor-particle');
-                p.style.left = x + 'px';
-                p.style.top = y + 'px';
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 400);
-            }
-        }
-
-        /* ----------------------------------------------------
-           メニュー ＆ アコーディオン開閉制御ギミック
-        ---------------------------------------------------- */
-        const menuBtn = document.getElementById('menu-btn');
-        const menuPanel = document.getElementById('menu-panel');
-        const accordionToggle = document.getElementById('accordion-toggle');
-        const accordionContent = document.getElementById('accordion-content');
-
-        // 3本線ボタンを押した時にパネルを滑り出させる
-        menuBtn.addEventListener('click', () => {
-            menuBtn.classList.toggle('active');
-            menuPanel.classList.toggle('open');
-        });
-
-        // 「制作者の情報」を押した時にアコーディオンを開閉
-        accordionToggle.addEventListener('click', () => {
-            accordionToggle.classList.toggle('active');
-            accordionContent.classList.toggle('show');
-        });
-
-        // パネル外を押したら自動で閉じる処理
-        document.addEventListener('click', (e) => {
-            if (!menuPanel.contains(e.target) && !menuBtn.contains(e.target) && menuPanel.classList.contains('open')) {
-                menuBtn.classList.remove('active');
-                menuPanel.classList.remove('open');
-            }
-        });
-
-        // txtファイル自動生成・自動ダウンロード
-        document.getElementById('test-dl-btn').addEventListener('click', () => {
-            const textContent = "お？このファイルダウンロードしたね？てすとだよてすと！";
-            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-            const blob = new Blob([bom, textContent], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'test.txt';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    </script>
 </body>
 </html>
