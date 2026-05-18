@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sndex</title>
+    <title>slcdax</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Space+Grotesk:wght@400;900&display=swap" rel="stylesheet">
@@ -36,14 +36,14 @@
             background-color: #060b16; 
             color: #e2e8f0;
             position: relative;
-            min-height: 180vh; /* 少し中身が増えたので心地よい高さを確保 */
+            min-height: 180vh; 
             display: flex;
             flex-direction: column;
             overflow-x: hidden; 
         }
 
         /* ----------------------------------------------------
-           2. クールブルー・カーソルシステム（PC用）
+           2. クールブルー・カーソルシステム（大口径版）
         ---------------------------------------------------- */
         #cursor-ring {
             width: 44px;
@@ -162,6 +162,7 @@
             z-index: 0;
         }
 
+        /* 【新名称】slcdax の巨大ブランドロゴ */
         .brand-huge {
             font-size: clamp(65px, 16vw, 220px); 
             font-weight: 900;
@@ -201,7 +202,7 @@
             50% { opacity: 1; transform: translateY(6px); }
         }
 
-        /* 中間：コンテンツセクション（多目的仕様に進化） */
+        /* 中間：多目的サービスセクション */
         .content-section {
             display: flex;
             flex-direction: column;
@@ -212,7 +213,6 @@
             z-index: 10;
         }
 
-        /* 【修正】多目的で開発者の意図を伝えるステートメント文章 */
         .site-description {
             font-size: clamp(16px, 4vw, 22px); 
             color: #94a3b8;
@@ -223,7 +223,6 @@
             font-weight: 400;
         }
 
-        /* ボタンを並べるコンテナ（PCなら横並び、スマホなら縦並び） */
         .service-action-group {
             display: flex;
             gap: 20px;
@@ -232,7 +231,6 @@
             max-width: 800px;
         }
 
-        /* 共通ボタンベース */
         .action-trigger {
             background: rgba(0, 210, 255, 0.02);
             color: #00d2ff;
@@ -249,7 +247,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* メインのダウンロードボタン（白く発光） */
         .btn-primary:hover {
             background: #ffffff;
             color: #060b16;
@@ -258,7 +255,6 @@
             transform: translateY(-2px);
         }
 
-        /* 追加された謎の多目的ボタン（青く静かに発光） */
         .btn-secondary {
             border-color: rgba(0, 210, 255, 0.4);
             color: rgba(0, 210, 255, 0.7);
@@ -290,6 +286,7 @@
             border-top: 1px solid rgba(255, 255, 255, 0.01);
         }
 
+        /* 【新名称】手書き署名も slcdax へ変更 */
         .brand-signature {
             font-family: 'Alex Brush', cursive;
             font-size: clamp(38px, 6vw, 65px);
@@ -326,7 +323,7 @@
     <div id="cursor-dot-container"></div>
 
     <div class="hero-section">
-        <h1 class="brand-huge">sndex<span>.</span></h1>
+        <h1 class="brand-huge">slcdax<span>.</span></h1>
         <div class="scroll-indicator">↓ Scroll Down</div>
     </div>
 
@@ -351,7 +348,7 @@
     </div>
 
     <div class="footer-signature-container">
-        <h2 class="brand-signature">Sndex</h2>
+        <h2 class="brand-signature">Slcdax</h2>
         <p class="signature-sub">AUTHENTIC SIGNATURE</p>
     </div>
 
@@ -393,7 +390,6 @@
             }
             requestAnimationFrame(animateCursor);
 
-            // 動的にホバーイベントを設定
             const refreshHover = () => {
                 const targets = document.querySelectorAll('.brand-huge, .action-trigger, .brand-signature');
                 targets.forEach(el => {
