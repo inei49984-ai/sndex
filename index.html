@@ -9,15 +9,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Space+Grotesk:wght@400;900&display=swap" rel="stylesheet">
     <style>
         /* ----------------------------------------------------
-           1. 通常のカーソルを完全に消し去る設定
+           1. 全体設定（スマホでの誤作動・拡大防止）
         ---------------------------------------------------- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            cursor: none !important; /* OS標準ポインターを完全非表示 */
             user-select: none; /* UI感を強めるために文字選択を禁止 */
+            -webkit-user-select: none;
+            -webkit-touch-callout: none; /* スマホ長押しメニューを禁止 */
+        }
+
+        /* PCの時だけOS標準のカーソルを消す */
+        @media (pointer: fine) {
+            * {
+                cursor: none !important;
+            }
         }
 
         html {
@@ -28,17 +36,17 @@
             background-color: #060b16; /* 深いディープネイビー */
             color: #e2e8f0;
             position: relative;
-            min-height: 180vh; /* スクロール感をしっかり出すための高さ */
+            min-height: 160vh; /* スマホでも心地よいスクロール感を持たせる高さ */
             display: flex;
             flex-direction: column;
+            overflow-x: hidden; /* スマホで横揺れ・横スクロールするのを完全に防ぐ */
         }
 
         /* ----------------------------------------------------
-           2. クールブルー・カーソルシステム（サイズ拡大版）
+           2. クールブルー・カーソルシステム（PC用）
         ---------------------------------------------------- */
-        /* 【デカく修正】外側をぬるっと遅れて追いかけてくる大きな丸（◯） */
         #cursor-ring {
-            width: 44px; /* 通常時：32px → 44px に拡大 */
+            width: 44px;
             height: 44px;
             border: 2px solid #00d2ff;
             border-radius: 50%;
@@ -52,25 +60,24 @@
             opacity: 0;
             transform: translate(-50%, -50%);
             transform-origin: center center;
+            display: none; /* 初期状態は非表示（JSでPC判定なら表示） */
             transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, opacity 0.2s,
                         width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25),
                         height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
         }
 
-        /* 【デカく修正】ホバー（選択）時：さらにダイナミックに大口径化 */
         #cursor-ring.hover {
-            width: 90px; /* ホバー時：75px → 90px に拡大 */
+            width: 90px;
             height: 90px;
             border-color: #ffffff;
             background: rgba(0, 210, 255, 0.06);
             box-shadow: 0 0 30px #00d2ff, inset 0 0 15px rgba(0, 210, 255, 0.2);
         }
 
-        /* 【デカく修正】中心の固定白ドットを「直接囲っている丸（◯）」 */
         #cursor-dot-container {
-            width: 14px; /* 内丸のサイズ：6px → 14px に拡大 */
+            width: 14px;
             height: 14px;
-            border: 1.5px solid rgba(0, 210, 255, 0.6); /* 白ドットを上品に囲う丸線 */
+            border: 1.5px solid rgba(0, 210, 255, 0.6);
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
@@ -79,13 +86,12 @@
             top: 0;
             opacity: 0;
             transform: translate(-50%, -50%);
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
         }
 
-        /* 内丸の「ど真ん中」に固定される、パキッと白く光るドット（●） */
         #cursor-dot-container::before {
             content: '';
             width: 5px;
@@ -95,7 +101,7 @@
             box-shadow: 0 0 8px #ffffff, 0 0 12px #00d2ff;
         }
 
-        /* 完全中心から溢れ出る光の粒子 */
+        /* 移動時の光の粒子 */
         .cursor-particle {
             position: fixed;
             width: 4px;
@@ -115,34 +121,61 @@
         }
 
         /* ----------------------------------------------------
-           3. 各セクションのレイアウト
+           2.5 スマホタップ用の波紋エフェクト（NEW）
         ---------------------------------------------------- */
+        .touch-ripple {
+            position: fixed;
+            border: 2px solid #00d2ff;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.1);
+            box-shadow: 0 0 15px #00d2ff;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            animation: rippleEffect 0.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+
+        @keyframes rippleEffect {
+            0% { width: 0px; height: 0px; opacity: 1; }
+            100% { width: 80px; height: 80px; opacity: 0; }
+        }
+
+        /* ----------------------------------------------------
+           3. 各セクションのレイアウト（レスポンシブ対応）
+        ---------------------------------------------------- */
+        /* 第1画面：メインヒーロー */
         .hero-section {
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
+            padding: 0 20px;
         }
 
         .hero-section::before {
             content: '';
             position: absolute;
-            width: 600px;
+            width: 80%;
+            max-width: 600px;
             height: 600px;
             background: radial-gradient(circle, rgba(0, 210, 255, 0.06) 0%, rgba(6, 11, 22, 0) 70%);
             z-index: 0;
         }
 
+        /* 【スマホ調整】文字サイズを画面幅に合わせて最適化 */
         .brand-huge {
-            font-size: clamp(80px, 15vw, 220px);
+            font-size: clamp(65px, 16vw, 220px); /* スマホ（最小65px）〜PCまで可変 */
             font-weight: 900;
             color: #ffffff;
-            letter-spacing: -4px;
+            letter-spacing: -3px;
             line-height: 0.85;
             text-transform: lowercase;
             z-index: 10;
+            text-align: center;
             transition: transform 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
+            /* スマホでのタップ反応を良くする設定 */
+            touch-action: manipulation;
         }
 
         .brand-huge span {
@@ -150,8 +183,11 @@
             text-shadow: 0 0 30px rgba(0, 210, 255, 0.5);
         }
 
-        .brand-huge:hover {
-            transform: scale(1.02);
+        /* PCの時だけホバーで拡大 */
+        @media (pointer: fine) {
+            .brand-huge:hover {
+                transform: scale(1.02);
+            }
         }
 
         .scroll-indicator {
@@ -169,56 +205,66 @@
             50% { opacity: 1; transform: translateY(6px); }
         }
 
+        /* 中間：コンテンツセクション（説明文 ＆ DLボタン） */
         .content-section {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 100px 20px;
+            padding: 80px 24px;
             text-align: center;
             z-index: 10;
         }
 
         .site-description {
-            font-size: clamp(16px, 3vw, 22px);
+            font-size: clamp(15px, 4vw, 22px); /* スマホ対応のフォントサイズ */
             color: #94a3b8;
             max-width: 600px;
             line-height: 1.8;
             letter-spacing: 1px;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             font-weight: 400;
         }
 
+        /* ダウンロードボタン */
         .download-trigger {
             background: rgba(0, 210, 255, 0.03);
             color: #00d2ff;
             border: 1px solid #00d2ff;
             padding: 16px 40px;
             border-radius: 30px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             letter-spacing: 2px;
             text-transform: uppercase;
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
             transition: all 0.25s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent; /* スマホタップ時のグレーの影を消す */
         }
 
-        .download-trigger:hover {
-            background: #ffffff;
-            color: #060b16;
-            border-color: #ffffff;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 210, 255, 0.4);
-            transform: translateY(-2px);
+        /* PCホバー時のみ発光 */
+        @media (pointer: fine) {
+            .download-trigger:hover {
+                background: #ffffff;
+                color: #060b16;
+                border-color: #ffffff;
+                box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 210, 255, 0.4);
+                transform: translateY(-2px);
+            }
         }
 
+        /* スマホ・PC共通のタップ/クリックした瞬間 */
         .download-trigger:active {
-            transform: translateY(1px) scale(0.98);
+            transform: translateY(1px) scale(0.96);
+            background: rgba(0, 210, 255, 0.2);
         }
 
+        /* 最下部：ミニサインエリア */
         .footer-signature-container {
             margin-top: auto; 
             width: 100%;
-            padding: 80px 0 60px 0;
+            padding: 60px 0 50px 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -229,7 +275,7 @@
 
         .brand-signature {
             font-family: 'Alex Brush', cursive;
-            font-size: clamp(40px, 5vw, 65px);
+            font-size: clamp(38px, 6vw, 65px);
             color: #94a3b8;
             font-weight: 300;
             letter-spacing: 1px;
@@ -238,11 +284,13 @@
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .brand-signature:hover {
-            opacity: 1;
-            color: #ffffff;
-            letter-spacing: 5px;
-            text-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+        @media (pointer: fine) {
+            .brand-signature:hover {
+                opacity: 1;
+                color: #ffffff;
+                letter-spacing: 5px;
+                text-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            }
         }
 
         .signature-sub {
@@ -287,57 +335,90 @@
         let ringX = 0; let ringY = 0;
         const delaySpeed = 0.13;
 
-        // マウス移動（内丸と白ドットは1ミリもズレずに完全固定）
-        window.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            
-            dotContainer.style.left = mouseX + 'px';
-            dotContainer.style.top = mouseY + 'px';
-            
-            ring.style.opacity = '1';
-            dotContainer.style.opacity = '1';
+        // PC（マウス環境）かスマホ（タッチ環境）かを判定するフラグ
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-            createParticle(mouseX, mouseY);
-        });
+        if (!isTouchDevice) {
+            // 【PC用の処理】カーソルを表示して動かす
+            ring.style.display = 'block';
+            dotContainer.style.display = 'flex';
 
-        // 画面外処理
-        document.addEventListener('mouseleave', () => { ring.style.opacity = '0'; dotContainer.style.opacity = '0'; });
-        document.addEventListener('mouseenter', () => { ring.style.opacity = '1'; dotContainer.style.opacity = '1'; });
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                
+                dotContainer.style.left = mouseX + 'px';
+                dotContainer.style.top = mouseY + 'px';
+                
+                ring.style.opacity = '1';
+                dotContainer.style.opacity = '1';
 
-        // 外丸（◯）のぬるぬる遅延ループ
-        function animateCursor() {
-            ringX += (mouseX - ringX) * delaySpeed;
-            ringY += (mouseY - ringY) * delaySpeed;
-            ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+                createParticle(mouseX, mouseY);
+            });
+
+            document.addEventListener('mouseleave', () => { ring.style.opacity = '0'; dotContainer.style.opacity = '0'; });
+            document.addEventListener('mouseenter', () => { ring.style.opacity = '1'; dotContainer.style.opacity = '1'; });
+
+            function animateCursor() {
+                ringX += (mouseX - ringX) * delaySpeed;
+                ringY += (mouseY - ringY) * delaySpeed;
+                ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+                requestAnimationFrame(animateCursor);
+            }
             requestAnimationFrame(animateCursor);
+
+            // PCホバー拡大効果の紐付け
+            const interactiveElements = [
+                document.querySelector('.brand-huge'),
+                document.querySelector('#test-dl-btn'),
+                document.querySelector('.brand-signature')
+            ];
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+                el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+            });
+
+            function createParticle(x, y) {
+                if (Math.abs(mouseX - ringX) < 1 && Math.abs(mouseY - ringY) < 1) return;
+                const particle = document.createElement('div');
+                particle.classList.add('cursor-particle');
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 400); 
+            }
+        } else {
+            // 【スマホ用の処理】画面をタップした場所に波紋エフェクトを咲かせる
+            window.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                createTouchRipple(touch.clientX, touch.clientY);
+                createMobileParticle(touch.clientX, touch.clientY);
+            }, { passive: true });
         }
-        requestAnimationFrame(animateCursor);
 
-        // ホバー（選択）時のターゲット巨大化
-        const interactiveElements = [
-            document.querySelector('.brand-huge'),
-            document.querySelector('#test-dl-btn'),
-            document.querySelector('.brand-signature')
-        ];
-
-        interactiveElements.forEach(el => {
-            el.addEventListener('mouseenter', () => ring.classList.add('hover'));
-            el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
-        });
-
-        // 粒子エフェクト
-        function createParticle(x, y) {
-            if (Math.abs(mouseX - ringX) < 1 && Math.abs(mouseY - ringY) < 1) return;
-            const particle = document.createElement('div');
-            particle.classList.add('cursor-particle');
-            particle.style.left = x + 'px';
-            particle.style.top = y + 'px';
-            document.body.appendChild(particle);
-            setTimeout(() => particle.remove(), 400); 
+        // スマホ用波紋生成
+        function createTouchRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.classList.add('touch-ripple');
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 500);
         }
 
-        // txtファイルをその場で自動生成してダウンロードさせるギミック
+        // スマホ用タップ時スパーク（粒子）
+        function createMobileParticle(x, y) {
+            for(let i=0; i<3; i++) { // タップ時に3粒ハジける
+                const p = document.createElement('div');
+                p.classList.add('cursor-particle');
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 400);
+            }
+        }
+
+        // txtファイル自動生成・自動ダウンロード
         document.getElementById('test-dl-btn').addEventListener('click', () => {
             const textContent = "お？このファイルダウンロードしたね？てすとだよてすと！";
             const blob = new Blob([textContent], { type: 'text/plain' });
