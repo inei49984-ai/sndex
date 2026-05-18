@@ -43,7 +43,7 @@
         }
 
         /* ----------------------------------------------------
-           2. クールブルー・カーソルシステム（大口径版）
+           2. クールブルー・カーソルシステム
         ---------------------------------------------------- */
         #cursor-ring {
             width: 44px;
@@ -61,7 +61,6 @@
             transform: translate(-50%, -50%);
             transform-origin: center center;
             display: none; 
-            /* ぬるぬる感を強調するために幅と高さのtransitionを微調整 */
             transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, opacity 0.2s,
                         width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.25),
                         height 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.25);
@@ -120,9 +119,6 @@
             100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
         }
 
-        /* ----------------------------------------------------
-           2.5 スマホタップ用の波紋エフェクト
-        ---------------------------------------------------- */
         .touch-ripple {
             position: fixed;
             border: 2px solid #00d2ff;
@@ -138,6 +134,157 @@
         @keyframes rippleEffect {
             0% { width: 0px; height: 0px; opacity: 1; }
             100% { width: 80px; height: 80px; opacity: 0; }
+        }
+
+        /* ----------------------------------------------------
+           2.8 【新設】右上の3本線（ハンバーガーメニュー）ボタン
+        ---------------------------------------------------- */
+        .menu-toggle-btn {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: rgba(6, 11, 22, 0.7);
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .menu-line {
+            width: 20px;
+            height: 20px;
+            height: 2px;
+            background-color: #00d2ff;
+            border-radius: 2px;
+            transition: all 0.3s cubic-bezier(0.1, 0.8, 0.3, 1);
+        }
+
+        /* メニューが開いている時の3本線のクロスアニメーション */
+        .menu-toggle-btn.active .menu-line:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+            background-color: #ffffff;
+        }
+        .menu-toggle-btn.active .menu-line:nth-child(2) {
+            opacity: 0;
+        }
+        .menu-toggle-btn.active .menu-line:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+            background-color: #ffffff;
+        }
+
+        /* ----------------------------------------------------
+           2.9 【新設】スライド式メニューボード
+        ---------------------------------------------------- */
+        .side-menu-panel {
+            position: fixed;
+            top: 0;
+            right: -320px; /* 初期状態は右側に隠す */
+            width: 320px;
+            height: 100vh;
+            background: rgba(3, 6, 13, 0.95);
+            border-left: 1px solid rgba(0, 210, 255, 0.1);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 1900;
+            padding: 100px 30px 40px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .side-menu-panel.open {
+            right: 0; /* 画面内に出現 */
+        }
+
+        /* メニュー内の大項目（制作者の情報） */
+        .menu-item-trigger {
+            width: 100%;
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: left;
+            padding: 15px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            letter-spacing: 1px;
+            touch-action: manipulation;
+        }
+
+        .menu-item-trigger::after {
+            content: '↓';
+            font-size: 14px;
+            color: #00d2ff;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item-trigger.active::after {
+            transform: rotate(180deg); /* 展開時に矢印を反転 */
+        }
+
+        /* アコーディオン展開する中身（Discord / GitHub） */
+        .menu-sub-content {
+            max-height: 0; /* 初期状態は高さをゼロにして隠す */
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-left: 10px;
+        }
+
+        .menu-sub-content.show {
+            max-height: 150px; /* 展開時の最大高さ制限 */
+            margin-top: 5px;
+        }
+
+        /* SNSリンクボタン */
+        .sns-link-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 20px;
+            background: rgba(0, 210, 255, 0.03);
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            color: #00d2ff;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: all 0.25s ease;
+            touch-action: manipulation;
+        }
+
+        /* 各SNSブランドカラーによる微かなホバー光効果 */
+        @media (pointer: fine) {
+            .sns-link-btn:hover {
+                background: #ffffff;
+                color: #060b16;
+                border-color: #ffffff;
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        .sns-link-btn:active {
+            transform: scale(0.97);
         }
 
         /* ----------------------------------------------------
@@ -201,7 +348,6 @@
             50% { opacity: 1; transform: translateY(6px); }
         }
 
-        /* 中間：多目的サービスセクション */
         .content-section {
             display: flex;
             flex-direction: column;
@@ -258,7 +404,6 @@
             transform: translateY(1px) scale(0.96);
         }
 
-        /* 最下部：ミニサインエリア */
         .footer-signature-container {
             margin-top: auto; 
             width: 100%;
@@ -306,6 +451,26 @@
     <div id="cursor-ring"></div>
     <div id="cursor-dot-container"></div>
 
+    <button class="menu-toggle-btn" id="menu-btn">
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+    </button>
+
+    <div class="side-menu-panel" id="menu-panel">
+        <button class="menu-item-trigger" id="accordion-toggle">
+            制作者の情報
+        </button>
+        <div class="menu-sub-content" id="accordion-content">
+            <a href="https://discord.com/users/あなたのID" target="_blank" class="sns-link-btn">
+                <span>Discord Profile</span>
+            </a>
+            <a href="https://github.com/inei49984-ai" target="_blank" class="sns-link-btn">
+                <span>GitHub Profile</span>
+            </a>
+        </div>
+    </div>
+
     <div class="hero-section">
         <h1 class="brand-huge">slcdax<span>.</span></h1>
         <div class="scroll-indicator">↓ Scroll Down</div>
@@ -335,8 +500,7 @@
         let mouseX = 0; let mouseY = 0;
         let ringX = 0; let ringY = 0;
         
-        // 【修正】フィードバック（外丸の追従速度）を遅らせる設定
-        // 元の「0.13」から「0.06」に半分以下に落とし、ぬるぬるした引きずり感を大幅アップ
+        // フィードバック遅延（ぬるぬる粘り気のある引きずり感）
         const delaySpeed = 0.06;
 
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -369,8 +533,9 @@
             }
             requestAnimationFrame(animateCursor);
 
+            // ホバー対象を動的に監視
             const refreshHover = () => {
-                const targets = document.querySelectorAll('.brand-huge, .action-trigger, .brand-signature');
+                const targets = document.querySelectorAll('.brand-huge, .action-trigger, .brand-signature, #menu-btn, .menu-item-trigger, .sns-link-btn');
                 targets.forEach(el => {
                     el.addEventListener('mouseenter', () => ring.classList.add('hover'));
                     el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
@@ -415,14 +580,38 @@
             }
         }
 
-        // 【修正】スマホでの文字化けを100%完全に防ぐ、BOM付きUTF-8生成処理
+        /* ----------------------------------------------------
+           メニュー ＆ アコーディオン開閉制御ギミック
+        ---------------------------------------------------- */
+        const menuBtn = document.getElementById('menu-btn');
+        const menuPanel = document.getElementById('menu-panel');
+        const accordionToggle = document.getElementById('accordion-toggle');
+        const accordionContent = document.getElementById('accordion-content');
+
+        // 3本線ボタンを押した時にパネルを滑り出させる
+        menuBtn.addEventListener('click', () => {
+            menuBtn.classList.toggle('active');
+            menuPanel.classList.toggle('open');
+        });
+
+        // 「制作者の情報」を押した時にアコーディオンを開閉
+        accordionToggle.addEventListener('click', () => {
+            accordionToggle.classList.toggle('active');
+            accordionContent.classList.toggle('show');
+        });
+
+        // パネル外を押したら自動で閉じる処理
+        document.addEventListener('click', (e) => {
+            if (!menuPanel.contains(e.target) && !menuBtn.contains(e.target) && menuPanel.classList.contains('open')) {
+                menuBtn.classList.remove('active');
+                menuPanel.classList.remove('open');
+            }
+        });
+
+        // txtファイル自動生成・自動ダウンロード
         document.getElementById('test-dl-btn').addEventListener('click', () => {
             const textContent = "お？このファイルダウンロードしたね？てすとだよてすと！";
-            
-            // スマホ（特にiOS）に日本語であることを教えるための特殊な印（BOM）を先頭に付与
             const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-            
-            // BOMとテキストを合体させたデータ塊を作る
             const blob = new Blob([bom, textContent], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
