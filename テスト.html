@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sndex</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Space+Grotesk:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        /* ----------------------------------------------------
+           1. 通常のカーソルを完全に消し去る設定
+        ---------------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            cursor: none !important; /* OS標準ポインターを完全非表示 */
+            user-select: none; /* UI感を強めるために文字選択を禁止 */
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #060b16; /* 深いディープネイビー */
+            color: #e2e8f0;
+            position: relative;
+            min-height: 180vh; /* スクロール感をしっかり出すための高さ */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ----------------------------------------------------
+           2. クールブルー・カーソルシステム（サイズ拡大版）
+        ---------------------------------------------------- */
+        /* 【デカく修正】外側をぬるっと遅れて追いかけてくる大きな丸（◯） */
+        #cursor-ring {
+            width: 44px; /* 通常時：32px → 44px に拡大 */
+            height: 44px;
+            border: 2px solid #00d2ff;
+            border-radius: 50%;
+            background: rgba(0, 210, 255, 0.02);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transform-origin: center center;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, opacity 0.2s,
+                        width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25),
+                        height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+        }
+
+        /* 【デカく修正】ホバー（選択）時：さらにダイナミックに大口径化 */
+        #cursor-ring.hover {
+            width: 90px; /* ホバー時：75px → 90px に拡大 */
+            height: 90px;
+            border-color: #ffffff;
+            background: rgba(0, 210, 255, 0.06);
+            box-shadow: 0 0 30px #00d2ff, inset 0 0 15px rgba(0, 210, 255, 0.2);
+        }
+
+        /* 【デカく修正】中心の固定白ドットを「直接囲っている丸（◯）」 */
+        #cursor-dot-container {
+            width: 14px; /* 内丸のサイズ：6px → 14px に拡大 */
+            height: 14px;
+            border: 1.5px solid rgba(0, 210, 255, 0.6); /* 白ドットを上品に囲う丸線 */
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
+
+        /* 内丸の「ど真ん中」に固定される、パキッと白く光るドット（●） */
+        #cursor-dot-container::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ffffff, 0 0 12px #00d2ff;
+        }
+
+        /* 完全中心から溢れ出る光の粒子 */
+        .cursor-particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #00d2ff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            box-shadow: 0 0 8px #00d2ff, 0 0 12px #00d2ff;
+            transform: translate(-50%, -50%); 
+            animation: fadeOut 0.4s forwards ease-out;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
+        }
+
+        /* ----------------------------------------------------
+           3. 各セクションのレイアウト
+        ---------------------------------------------------- */
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.06) 0%, rgba(6, 11, 22, 0) 70%);
+            z-index: 0;
+        }
+
+        .brand-huge {
+            font-size: clamp(80px, 15vw, 220px);
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -4px;
+            line-height: 0.85;
+            text-transform: lowercase;
+            z-index: 10;
+            transition: transform 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
+        }
+
+        .brand-huge span {
+            color: #00d2ff;
+            text-shadow: 0 0 30px rgba(0, 210, 255, 0.5);
+        }
+
+        .brand-huge:hover {
+            transform: scale(1.02);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: #24354b;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(6px); }
+        }
+
+        .content-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .site-description {
+            font-size: clamp(16px, 3vw, 22px);
+            color: #94a3b8;
+            max-width: 600px;
+            line-height: 1.8;
+            letter-spacing: 1px;
+            margin-bottom: 50px;
+            font-weight: 400;
+        }
+
+        .download-trigger {
+            background: rgba(0, 210, 255, 0.03);
+            color: #00d2ff;
+            border: 1px solid #00d2ff;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
+            transition: all 0.25s ease;
+        }
+
+        .download-trigger:hover {
+            background: #ffffff;
+            color: #060b16;
+            border-color: #ffffff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 210, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .download-trigger:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .footer-signature-container {
+            margin-top: auto; 
+            width: 100%;
+            padding: 80px 0 60px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #03060d; 
+            border-top: 1px solid rgba(255, 255, 255, 0.01);
+        }
+
+        .brand-signature {
+            font-family: 'Alex Brush', cursive;
+            font-size: clamp(40px, 5vw, 65px);
+            color: #94a3b8;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-align: center;
+            opacity: 0.7;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .brand-signature:hover {
+            opacity: 1;
+            color: #ffffff;
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+        }
+
+        .signature-sub {
+            font-size: 10px;
+            color: #24354b;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor-ring"></div>
+    <div id="cursor-dot-container"></div>
+
+    <div class="hero-section">
+        <h1 class="brand-huge">sndex<span>.</span></h1>
+        <div class="scroll-indicator">↓ Scroll Down</div>
+    </div>
+
+    <div class="content-section">
+        <p class="site-description">
+            このサイトはファイルなどを提供しています。
+        </p>
+        <button class="download-trigger" id="test-dl-btn">
+            testのダウンロード
+        </button>
+    </div>
+
+    <div class="footer-signature-container">
+        <h2 class="brand-signature">Sndex</h2>
+        <p class="signature-sub">AUTHENTIC SIGNATURE</p>
+    </div>
+
+    <script>
+        const ring = document.getElementById('cursor-ring');
+        const dotContainer = document.getElementById('cursor-dot-container');
+        
+        let mouseX = 0; let mouseY = 0;
+        let ringX = 0; let ringY = 0;
+        const delaySpeed = 0.13;
+
+        // マウス移動（内丸と白ドットは1ミリもズレずに完全固定）
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            dotContainer.style.left = mouseX + 'px';
+            dotContainer.style.top = mouseY + 'px';
+            
+            ring.style.opacity = '1';
+            dotContainer.style.opacity = '1';
+
+            createParticle(mouseX, mouseY);
+        });
+
+        // 画面外処理
+        document.addEventListener('mouseleave', () => { ring.style.opacity = '0'; dotContainer.style.opacity = '0'; });
+        document.addEventListener('mouseenter', () => { ring.style.opacity = '1'; dotContainer.style.opacity = '1'; });
+
+        // 外丸（◯）のぬるぬる遅延ループ
+        function animateCursor() {
+            ringX += (mouseX - ringX) * delaySpeed;
+            ringY += (mouseY - ringY) * delaySpeed;
+            ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+            requestAnimationFrame(animateCursor);
+        }
+        requestAnimationFrame(animateCursor);
+
+        // ホバー（選択）時のターゲット巨大化
+        const interactiveElements = [
+            document.querySelector('.brand-huge'),
+            document.querySelector('#test-dl-btn'),
+            document.querySelector('.brand-signature')
+        ];
+
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+            el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+        });
+
+        // 粒子エフェクト
+        function createParticle(x, y) {
+            if (Math.abs(mouseX - ringX) < 1 && Math.abs(mouseY - ringY) < 1) return;
+            const particle = document.createElement('div');
+            particle.classList.add('cursor-particle');
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 400); 
+        }
+
+        // txtファイルをその場で自動生成してダウンロードさせるギミック
+        document.getElementById('test-dl-btn').addEventListener('click', () => {
+            const textContent = "お？このファイルダウンロードしたね？てすとだよてすと！";
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'test.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+</body>
+</html>
