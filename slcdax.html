@@ -8,115 +8,54 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Space+Grotesk:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        /* ----------------------------------------------------
-           1. 全体設定
-        ---------------------------------------------------- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none; 
+            user-select: none;
             -webkit-user-select: none;
-            -webkit-touch-callout: none; 
+            -webkit-touch-callout: none;
         }
 
-        /* PCの時だけOS標準のカーソルを消す */
         @media (pointer: fine) {
-            * {
-                cursor: none !important;
-            }
+            * { cursor: none !important; }
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
-            background-color: #060b16; 
+            background-color: #020510;
             color: #e2e8f0;
             position: relative;
-            min-height: 180vh; 
+            min-height: 180vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden; 
+            overflow-x: hidden;
         }
 
-        /* ----------------------------------------------------
-           2. クールブルー・カーソルシステム
-        ---------------------------------------------------- */
-        #cursor-ring {
-            width: 44px;
-            height: 44px;
-            border: 2px solid #00d2ff;
-            border-radius: 50%;
-            background: rgba(0, 210, 255, 0.02);
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+        /* ====================================================
+           BACKGROUND CANVAS
+        ==================================================== */
+        #bg-canvas {
             position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
             pointer-events: none;
+        }
+
+        /* ====================================================
+           CURSOR CANVAS (overlay, all cursor drawing is in JS)
+        ==================================================== */
+        #cursor-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 9999;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            transform: translate(-50%, -50%);
-            transform-origin: center center;
-            display: none; 
-            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s, opacity 0.2s,
-                        width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.25),
-                        height 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.25);
-        }
-
-        #cursor-ring.hover {
-            width: 90px;
-            height: 90px;
-            border-color: #ffffff;
-            background: rgba(0, 210, 255, 0.06);
-            box-shadow: 0 0 30px #00d2ff, inset 0 0 15px rgba(0, 210, 255, 0.2);
-        }
-
-        #cursor-dot-container {
-            width: 14px;
-            height: 14px;
-            border: 1.5px solid rgba(0, 210, 255, 0.6);
-            border-radius: 50%;
-            position: fixed;
             pointer-events: none;
-            z-index: 10000;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            transform: translate(-50%, -50%);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
-        }
-
-        #cursor-dot-container::before {
-            content: '';
-            width: 5px;
-            height: 5px;
-            background-color: #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #ffffff, 0 0 12px #00d2ff;
-        }
-
-        .cursor-particle {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: #00d2ff;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            box-shadow: 0 0 8px #00d2ff, 0 0 12px #00d2ff;
-            transform: translate(-50%, -50%); 
-            animation: fadeOut 0.4s forwards ease-out;
-        }
-
-        @keyframes fadeOut {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
         }
 
         .touch-ripple {
@@ -124,7 +63,6 @@
             border: 2px solid #00d2ff;
             border-radius: 50%;
             background: rgba(0, 210, 255, 0.1);
-            box-shadow: 0 0 15px #00d2ff;
             pointer-events: none;
             z-index: 9999;
             transform: translate(-50%, -50%);
@@ -136,9 +74,9 @@
             100% { width: 80px; height: 80px; opacity: 0; }
         }
 
-        /* ----------------------------------------------------
-           3. 右上の三本線（ハンバーガーボタン）
-        ---------------------------------------------------- */
+        /* ====================================================
+           HAMBURGER
+        ==================================================== */
         .header-menu-trigger {
             position: fixed;
             top: 30px;
@@ -175,20 +113,16 @@
             }
         }
 
-        .header-menu-trigger:active {
-            transform: scale(0.9);
-        }
+        .header-menu-trigger:active { transform: scale(0.9); }
 
-        /* ----------------------------------------------------
-           4. AIチャット風フローティングUIコンソール
-        ---------------------------------------------------- */
+        /* ====================================================
+           UI CONSOLE
+        ==================================================== */
         .ui-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(3, 6, 13, 0.7);
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(2, 5, 16, 0.75);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             z-index: 2000;
@@ -200,15 +134,12 @@
             transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .ui-overlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .ui-overlay.open { opacity: 1; pointer-events: auto; }
 
         .ui-console {
             width: 90%;
             max-width: 680px;
-            background: #0b1326;
+            background: #080f22;
             border: 1px solid rgba(0, 210, 255, 0.25);
             border-radius: 24px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 210, 255, 0.1);
@@ -218,9 +149,7 @@
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .ui-overlay.open .ui-console {
-            transform: scale(1) translateY(0);
-        }
+        .ui-overlay.open .ui-console { transform: scale(1) translateY(0); }
 
         .ui-header {
             display: flex;
@@ -244,15 +173,14 @@
             font-size: 20px;
             transition: color 0.2s;
         }
+
         @media (pointer: fine) {
-            .ui-close-btn:hover {
-                color: #ffffff;
-            }
+            .ui-close-btn:hover { color: #ffffff; }
         }
 
         .ai-input-container {
             width: 100%;
-            background: rgba(6, 11, 22, 0.6);
+            background: rgba(2, 5, 16, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 18px;
             padding: 20px;
@@ -284,7 +212,7 @@
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: #111a2e;
+            background: #0f1a30;
             border: 1px solid rgba(0, 210, 255, 0.2);
             display: flex;
             justify-content: center;
@@ -307,18 +235,16 @@
                 box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
             }
             .brand-icon-link:hover svg {
-                fill: #060b16;
+                fill: #020510;
                 transform: scale(1.1);
             }
         }
 
-        .brand-icon-link:active {
-            transform: scale(0.95);
-        }
+        .brand-icon-link:active { transform: scale(0.95); }
 
-        /* ----------------------------------------------------
-           5. 各セクションのレイアウト
-        ---------------------------------------------------- */
+        /* ====================================================
+           SECTIONS
+        ==================================================== */
         .hero-section {
             height: 100vh;
             display: flex;
@@ -326,20 +252,11 @@
             align-items: center;
             position: relative;
             padding: 0 20px;
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            width: 80%;
-            max-width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(0, 210, 255, 0.06) 0%, rgba(6, 11, 22, 0) 70%);
-            z-index: 0;
+            z-index: 10;
         }
 
         .brand-huge {
-            font-size: clamp(65px, 16vw, 220px); 
+            font-size: clamp(65px, 16vw, 220px);
             font-weight: 900;
             color: #ffffff;
             letter-spacing: -3px;
@@ -349,17 +266,16 @@
             text-align: center;
             transition: transform 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
             touch-action: manipulation;
+            text-shadow: 0 0 80px rgba(0, 210, 255, 0.15);
         }
 
         .brand-huge span {
             color: #00d2ff;
-            text-shadow: 0 0 30px rgba(0, 210, 255, 0.5);
+            text-shadow: 0 0 30px rgba(0, 210, 255, 0.6), 0 0 60px rgba(0, 210, 255, 0.3);
         }
 
         @media (pointer: fine) {
-            .brand-huge:hover {
-                transform: scale(1.02);
-            }
+            .brand-huge:hover { transform: scale(1.02); }
         }
 
         .scroll-indicator {
@@ -385,10 +301,11 @@
             padding: 100px 24px;
             text-align: center;
             z-index: 10;
+            position: relative;
         }
 
         .site-description {
-            font-size: clamp(16px, 4vw, 22px); 
+            font-size: clamp(16px, 4vw, 22px);
             color: #94a3b8;
             max-width: 650px;
             line-height: 1.8;
@@ -423,26 +340,26 @@
 
         .btn-primary:hover {
             background: #ffffff;
-            color: #060b16;
+            color: #020510;
             border-color: #ffffff;
             box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 210, 255, 0.4);
             transform: translateY(-2px);
         }
 
-        .action-trigger:active {
-            transform: translateY(1px) scale(0.96);
-        }
+        .action-trigger:active { transform: translateY(1px) scale(0.96); }
 
         .footer-signature-container {
-            margin-top: auto; 
+            margin-top: auto;
             width: 100%;
             padding: 60px 0 50px 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #03060d; 
-            border-top: 1px solid rgba(255, 255, 255, 0.01);
+            background-color: rgba(2, 5, 16, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+            z-index: 10;
         }
 
         .brand-signature {
@@ -477,17 +394,15 @@
 </head>
 <body>
 
-    <div id="cursor-ring"></div>
-    <div id="cursor-dot-container"></div>
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="cursor-canvas"></canvas>
 
-    <!-- 右上の三本線（ハンバーガーボタン） -->
     <button class="header-menu-trigger" id="global-menu-btn" title="Menu">
         <span class="menu-bar bar-top"></span>
         <span class="menu-bar bar-mid"></span>
         <span class="menu-bar bar-bot"></span>
     </button>
 
-    <!-- UIコンソール（ポップアップ） -->
     <div class="ui-overlay" id="ui-overlay">
         <div class="ui-console">
             <div class="ui-header">
@@ -497,13 +412,11 @@
             <div class="ai-input-container">
                 <div class="ai-prompt-placeholder">開発者のsns</div>
                 <div class="ai-action-bar">
-                    <!-- Discord (指定の招待リンクへ変更) -->
                     <a href="https://discord.gg/DgghS5AtvU" target="_blank" class="brand-icon-link" title="Discord">
                         <svg viewBox="0 0 127.14 96.36">
                             <path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a74.37,74.37,0,0,0,6.72-11A68.55,68.55,0,0,1,28,80.47c1-.72,2-1.47,3-2.25a74.55,74.55,0,0,0,65.3,0c1,.78,2,1.53,3,2.25a68.55,68.55,0,0,1-10.74,4.9,74.37,74.37,0,0,0,6.72,11,105.73,105.73,0,0,0,31.29-18.83C130.23,48.22,123.66,25.43,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.93,46,53.82,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.17,46,96.06,53,91,65.69,84.69,65.69Z"/>
                         </svg>
                     </a>
-                    <!-- GitHub -->
                     <a href="https://github.com/inei49984-ai" target="_blank" class="brand-icon-link" title="GitHub">
                         <svg viewBox="0 0 98 96">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.261 33.4 46.754 2.443.453 3.332-.1 3.332-2.372 0-1.17-.04-4.269-.062-8.38-13.59 2.978-16.458-6.611-16.458-6.611-2.222-5.692-5.424-7.207-5.424-7.207-4.434-3.055.336-2.995.336-2.995 4.903.348 7.484 5.086 7.484 5.086 4.359 7.534 11.432 5.358 14.217 4.095.442-3.187 1.705-5.361 3.102-6.594-10.85-1.243-22.256-5.474-22.256-24.378 0-5.387 1.905-9.79 5.039-13.239-.504-1.25-2.184-6.269.477-13.06 0 0 4.113-1.328 13.473 5.068 3.908-1.096 8.099-1.644 12.263-1.663 4.159.019 8.354.567 12.27 1.663 9.347-6.396 13.447-5.068 13.447-5.068 2.67 6.791.99 11.81.487 13.06 3.14 3.449 5.033 7.852 5.033 13.239 0 18.952-11.425 23.121-22.31 24.339 1.756 1.527 3.322 4.529 3.322 9.127 0 6.591-.06 11.907-.06 13.525 0 2.292.876 4.861 3.364 4.374C84.025 89.467 98 70.97 98 49.217 98 22 76.155 0 48.854 0z"/>
@@ -523,7 +436,6 @@
         <p class="site-description">
             多目的で開発者の意図によってサービスが提供されます。
         </p>
-        
         <div class="service-action-group">
             <button class="action-trigger btn-primary" id="test-dl-btn">
                 testのダウンロード
@@ -537,129 +449,303 @@
     </div>
 
     <script>
-        const ring = document.getElementById('cursor-ring');
-        const dotContainer = document.getElementById('cursor-dot-container');
-        
-        let mouseX = 0; let mouseY = 0;
-        let ringX = 0; let ringY = 0;
-        
-        const delaySpeed = 0.06;
+    /* ====================================================
+       BACKGROUND — lightweight: stars + static nebula + geometry
+    ==================================================== */
+    (function() {
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let W, H;
+
+        function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Stars — static positions, no shadow, just twinkle alpha
+        const STAR_COUNT = 160;
+        const stars = Array.from({ length: STAR_COUNT }, () => ({
+            x: Math.random() * 1, y: Math.random() * 1,
+            r: Math.random() * 1.2 + 0.3,
+            a: Math.random() * 0.6 + 0.15,
+            tw: Math.random() * Math.PI * 2
+        }));
+
+        // Geometry nodes — fewer, no shadowBlur
+        const GEO = Array.from({ length: 12 }, () => ({
+            x: Math.random(), y: Math.random(),
+            vx: (Math.random() - 0.5) * 0.00010,
+            vy: (Math.random() - 0.5) * 0.00010
+        }));
+
+        // Draw nebula once onto offscreen canvas (static, no per-frame redraw)
+        const nebulaCanvas = document.createElement('canvas');
+        function bakeNebula() {
+            nebulaCanvas.width = W; nebulaCanvas.height = H;
+            const nc = nebulaCanvas.getContext('2d');
+            const blobs = [
+                { x: 0.18, y: 0.25, rx: 0.32, r: 255, g: 60,  b: 120, a: 0.04 },
+                { x: 0.78, y: 0.55, rx: 0.28, r: 60,  g: 80,  b: 255, a: 0.045},
+                { x: 0.50, y: 0.82, rx: 0.38, r: 0,   g: 200, b: 255, a: 0.035},
+                { x: 0.85, y: 0.15, rx: 0.20, r: 120, g: 0,   b: 255, a: 0.03 }
+            ];
+            blobs.forEach(n => {
+                const px = n.x * W, py = n.y * H, rad = n.rx * W;
+                const g = nc.createRadialGradient(px, py, 0, px, py, rad);
+                g.addColorStop(0,   `rgba(${n.r},${n.g},${n.b},${n.a})`);
+                g.addColorStop(0.5, `rgba(${n.r},${n.g},${n.b},${n.a * 0.35})`);
+                g.addColorStop(1,   'rgba(0,0,0,0)');
+                nc.fillStyle = g;
+                nc.beginPath();
+                nc.arc(px, py, rad, 0, Math.PI * 2);
+                nc.fill();
+            });
+        }
+        bakeNebula();
+        window.addEventListener('resize', bakeNebula);
+
+        function loop(t) {
+            // bg
+            ctx.fillStyle = '#020510';
+            ctx.fillRect(0, 0, W, H);
+
+            // nebula (single drawImage — cheap)
+            ctx.drawImage(nebulaCanvas, 0, 0);
+
+            // stars — no shadowBlur, just globalAlpha twinkle
+            ctx.fillStyle = '#ffffff';
+            stars.forEach(s => {
+                ctx.globalAlpha = s.a * (0.55 + Math.sin(t * 0.0008 + s.tw) * 0.45);
+                ctx.beginPath();
+                ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            // geometry lines — batch all into one path per alpha level is expensive;
+            // instead just iterate but NO save/restore, NO shadowBlur
+            GEO.forEach(n => {
+                n.x += n.vx; n.y += n.vy;
+                if (n.x < 0) n.x = 1; if (n.x > 1) n.x = 0;
+                if (n.y < 0) n.y = 1; if (n.y > 1) n.y = 0;
+            });
+            const DIST = 0.22;
+            for (let i = 0; i < GEO.length; i++) {
+                for (let j = i + 1; j < GEO.length; j++) {
+                    const a = GEO[i], b = GEO[j];
+                    const dx = a.x - b.x, dy = a.y - b.y;
+                    const d = Math.sqrt(dx * dx + dy * dy);
+                    if (d < DIST) {
+                        ctx.globalAlpha = (1 - d / DIST) * 0.15;
+                        ctx.strokeStyle = '#00d2ff';
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(a.x * W, a.y * H);
+                        ctx.lineTo(b.x * W, b.y * H);
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+    })();
+
+    /* ====================================================
+       CURSOR — Canvas, zero position lag, minimal shadowBlur
+    ==================================================== */
+    (function() {
+        const cc = document.getElementById('cursor-canvas');
+        const cx = cc.getContext('2d');
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+        let CW, CH;
+        function resizeCursor() { CW = cc.width = window.innerWidth; CH = cc.height = window.innerHeight; }
+        resizeCursor();
+        window.addEventListener('resize', resizeCursor);
+
+        let mx = -999, my = -999;
+        let visible = false;
+        let isHover = false;
+        let hoverEl = null;   // the actual hovered element
+
+        // Ring size — only size lerps, position is instant
+        let ringR = 22, ringRTarget = 22;
+        const RING_NORMAL = 22, RING_HOVER = 45;
+
+        // Pulse
+        let glowPhase = 0;
+
+        // Water-drop ripples: { cx, cy, rw, rh, r, life, maxR }
+        //   rw/rh = half-width/height of the bounding rect (for ellipse shape)
+        const ripples = [];
+
         if (!isTouchDevice) {
-            ring.style.display = 'block';
-            dotContainer.style.display = 'flex';
+            window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; visible = true; });
+            document.addEventListener('mouseleave', () => { visible = false; });
+            document.addEventListener('mouseenter', () => { visible = true; });
 
-            window.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                
-                dotContainer.style.left = mouseX + 'px';
-                dotContainer.style.top = mouseY + 'px';
-                
-                ring.style.opacity = '1';
-                dotContainer.style.opacity = '1';
-
-                createParticle(mouseX, mouseY);
-            });
-
-            document.addEventListener('mouseleave', () => { ring.style.opacity = '0'; dotContainer.style.opacity = '0'; });
-            document.addEventListener('mouseenter', () => { ring.style.opacity = '1'; dotContainer.style.opacity = '1'; });
-
-            function animateCursor() {
-                ringX += (mouseX - ringX) * delaySpeed;
-                ringY += (mouseY - ringY) * delaySpeed;
-                ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
-                requestAnimationFrame(animateCursor);
-            }
-            requestAnimationFrame(animateCursor);
-
-            const refreshHover = () => {
-                const targets = document.querySelectorAll('.brand-huge, .action-trigger, .brand-signature, .brand-icon-link, .ui-close-btn, .header-menu-trigger');
-                targets.forEach(el => {
-                    el.addEventListener('mouseenter', () => ring.classList.add('hover'));
-                    el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+            const hoverTargets = document.querySelectorAll('.brand-huge, .action-trigger, .brand-signature, .brand-icon-link, .ui-close-btn, .header-menu-trigger');
+            hoverTargets.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    isHover = true; hoverEl = el;
+                    // spawn ripple from element center, sized to wrap the element
+                    const rect = el.getBoundingClientRect();
+                    const cx2 = rect.left + rect.width  / 2;
+                    const cy2 = rect.top  + rect.height / 2;
+                    const hw  = rect.width  / 2 + 8;   // slightly outside
+                    const hh  = rect.height / 2 + 8;
+                    // spawn 3 rings with slight delay encoded as negative life-start
+                    for (let i = 0; i < 3; i++) {
+                        ripples.push({ ex: cx2, ey: cy2, hw, hh, r: 0, life: 1.0 - i * 0.22, delay: i * 0.22 });
+                    }
                 });
-            };
-            refreshHover();
-
-            function createParticle(x, y) {
-                if (Math.abs(mouseX - ringX) < 1 && Math.abs(mouseY - ringY) < 1) return;
-                const particle = document.createElement('div');
-                particle.classList.add('cursor-particle');
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 400); 
-            }
+                el.addEventListener('mouseleave', () => { isHover = false; hoverEl = null; });
+            });
         } else {
-            window.addEventListener('touchstart', (e) => {
-                const touch = e.touches[0];
-                createTouchRipple(touch.clientX, touch.clientY);
-                createMobileParticle(touch.clientX, touch.clientY);
+            window.addEventListener('touchstart', e => {
+                const t = e.touches[0];
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+                const target = el && el.closest('.brand-huge, .action-trigger, .brand-signature, .brand-icon-link, .ui-close-btn, .header-menu-trigger');
+                if (target) {
+                    const rect = target.getBoundingClientRect();
+                    const hw = rect.width / 2 + 8, hh = rect.height / 2 + 8;
+                    for (let i = 0; i < 3; i++) {
+                        ripples.push({ ex: rect.left + rect.width/2, ey: rect.top + rect.height/2, hw, hh, r: 0, life: 1.0 - i * 0.22, delay: i * 0.22 });
+                    }
+                }
             }, { passive: true });
         }
 
-        function createTouchRipple(x, y) {
-            const ripple = document.createElement('div');
-            ripple.classList.add('touch-ripple');
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            document.body.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 500);
-        }
+        function drawCursorFrame() {
+            cx.clearRect(0, 0, CW, CH);
+            if (isTouchDevice && ripples.length === 0) { requestAnimationFrame(drawCursorFrame); return; }
+            if (!isTouchDevice && !visible && ripples.length === 0) { requestAnimationFrame(drawCursorFrame); return; }
 
-        function createMobileParticle(x, y) {
-            for(let i=0; i<3; i++) {
-                const p = document.createElement('div');
-                p.classList.add('cursor-particle');
-                p.style.left = x + 'px';
-                p.style.top = y + 'px';
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 400);
+            glowPhase += 0.04;
+            const pulse = (Math.sin(glowPhase) + 1) * 0.5; // 0→1
+
+            ringRTarget = isHover ? RING_HOVER : RING_NORMAL;
+            ringR += (ringRTarget - ringR) * 0.16;
+
+            // ---- Water-drop ripples (ellipse expanding, fading) ----
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const rp = ripples[i];
+                if (rp.delay > 0) { rp.delay -= 0.02; continue; }
+                rp.r += 0.035;  // 0→1 expansion progress
+                rp.life -= 0.018;
+                if (rp.life <= 0 || rp.r >= 1) { ripples.splice(i, 1); continue; }
+
+                // ellipse: starts at hw/hh, expands outward
+                const scale = 1 + rp.r * 1.4; // 1x → 2.4x
+                const ew = rp.hw * scale;
+                const eh = rp.hh * scale;
+                const alpha = rp.life * (1 - rp.r) * 0.9;
+
+                cx.save();
+                cx.globalAlpha = alpha;
+                cx.strokeStyle = '#00d2ff';
+                cx.lineWidth = 1.5 * (1 - rp.r * 0.6);
+                cx.beginPath();
+                cx.ellipse(rp.ex, rp.ey, ew, eh, 0, 0, Math.PI * 2);
+                cx.stroke();
+                cx.restore();
             }
+
+            if (isTouchDevice || !visible) { requestAnimationFrame(drawCursorFrame); return; }
+
+            // ---- Outer soft glow (one gradient, no shadowBlur) ----
+            const gR = ringR * 4.5 + pulse * ringR * 1.5;
+            const gA = 0.07 + pulse * 0.18;
+            const og = cx.createRadialGradient(mx, my, ringR, mx, my, gR);
+            og.addColorStop(0,   `rgba(0,210,255,${gA})`);
+            og.addColorStop(1,   'rgba(0,0,0,0)');
+            cx.fillStyle = og;
+            cx.beginPath();
+            cx.arc(mx, my, gR, 0, Math.PI * 2);
+            cx.fill();
+
+            // ---- Ring stroke (single draw, shadowBlur only here) ----
+            const ringAlpha = 0.65 + pulse * 0.35;
+            cx.save();
+            cx.strokeStyle = isHover ? `rgba(255,255,255,${ringAlpha})` : `rgba(0,210,255,${ringAlpha})`;
+            cx.lineWidth = 1.5 + pulse * 0.8;
+            cx.shadowBlur  = 10 + pulse * 20;   // 10→30 — ONE shadowBlur call total
+            cx.shadowColor = isHover ? '#ffffff' : '#00d2ff';
+            cx.beginPath();
+            cx.arc(mx, my, ringR, 0, Math.PI * 2);
+            cx.stroke();
+            cx.restore();
+
+            // ---- Inner light fill ----
+            const ig = cx.createRadialGradient(mx, my - ringR * 0.1, 0, mx, my, ringR);
+            ig.addColorStop(0,   `rgba(220,250,255,${0.06 + pulse * 0.50})`);
+            ig.addColorStop(0.4, `rgba(0,210,255,${0.02 + pulse * 0.22})`);
+            ig.addColorStop(1,   'rgba(0,0,0,0)');
+            cx.fillStyle = ig;
+            cx.beginPath();
+            cx.arc(mx, my, ringR, 0, Math.PI * 2);
+            cx.fill();
+
+            // ---- Specular glint ----
+            const sx = mx - ringR * 0.25, sy = my - ringR * 0.28;
+            const sg = cx.createRadialGradient(sx, sy, 0, sx, sy, ringR * 0.48);
+            sg.addColorStop(0,   `rgba(255,255,255,${0.18 + pulse * 0.52})`);
+            sg.addColorStop(1,   'rgba(255,255,255,0)');
+            cx.save();
+            cx.beginPath();
+            cx.arc(mx, my, ringR * 0.94, 0, Math.PI * 2);
+            cx.clip();
+            cx.fillStyle = sg;
+            cx.fillRect(mx - ringR, my - ringR, ringR * 2, ringR * 2);
+            cx.restore();
+
+            // ---- Center dot (no shadowBlur) ----
+            const dotR = 2.5 + pulse * 3;
+            const dg = cx.createRadialGradient(mx, my, 0, mx, my, dotR * 1.8);
+            dg.addColorStop(0, '#ffffff');
+            dg.addColorStop(0.5, `rgba(160,240,255,${0.6 + pulse * 0.4})`);
+            dg.addColorStop(1, 'rgba(0,210,255,0)');
+            cx.fillStyle = dg;
+            cx.beginPath();
+            cx.arc(mx, my, dotR, 0, Math.PI * 2);
+            cx.fill();
+
+            requestAnimationFrame(drawCursorFrame);
         }
+        requestAnimationFrame(drawCursorFrame);
 
-        /* ----------------------------------------------------
-           UIコンソール ポップアップ制御ロジック
-        ---------------------------------------------------- */
-        const globalMenuBtn = document.getElementById('global-menu-btn'); 
-        const uiOverlay = document.getElementById('ui-overlay');
-        const uiCloseBtn = document.getElementById('ui-close-btn');
+        window._setCursorHover = v => { isHover = v; };
+    })();
 
-        // コンソールを開く
-        const openConsole = () => {
-            uiOverlay.classList.add('open');
-        };
+    /* ====================================================
+       UI CONSOLE
+    ==================================================== */
+    const globalMenuBtn = document.getElementById('global-menu-btn');
+    const uiOverlay = document.getElementById('ui-overlay');
+    const uiCloseBtn = document.getElementById('ui-close-btn');
 
-        globalMenuBtn.addEventListener('click', openConsole);
+    globalMenuBtn.addEventListener('click', () => uiOverlay.classList.add('open'));
+    uiCloseBtn.addEventListener('click', () => { uiOverlay.classList.remove('open'); window._setCursorHover && window._setCursorHover(false); });
+    uiOverlay.addEventListener('click', e => {
+        if (e.target === uiOverlay) { uiOverlay.classList.remove('open'); window._setCursorHover && window._setCursorHover(false); }
+    });
 
-        // ✕ボタンクリックでUIを閉じる
-        uiCloseBtn.addEventListener('click', () => {
-            uiOverlay.classList.remove('open');
-            if (ring) ring.classList.remove('hover');
-        });
-
-        // 背景クリックで閉じる
-        uiOverlay.addEventListener('click', (e) => {
-            if (e.target === uiOverlay) {
-                uiOverlay.classList.remove('open');
-                if (ring) ring.classList.remove('hover');
-            }
-        });
-
-        // txtファイル自動ダウンロード
-        document.getElementById('test-dl-btn').addEventListener('click', () => {
-            const textContent = "お？このファイルダウンロードしたね？てすとだよてすと！";
-            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-            const blob = new Blob([bom, textContent], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'test.txt';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
+    /* ====================================================
+       DOWNLOAD
+    ==================================================== */
+    document.getElementById('test-dl-btn').addEventListener('click', () => {
+        const text = "お？このファイルダウンロードしたね？てすとだよてすと！";
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const blob = new Blob([bom, text], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'test.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
     </script>
 </body>
 </html>
