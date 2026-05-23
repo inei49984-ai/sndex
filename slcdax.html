@@ -461,14 +461,24 @@
         resize();
         window.addEventListener('resize', resize);
 
-        // Stars — static positions, no shadow, just twinkle alpha
-        const STAR_COUNT = 160;
-        const stars = Array.from({ length: STAR_COUNT }, () => ({
-            x: Math.random() * 1, y: Math.random() * 1,
-            r: Math.random() * 1.2 + 0.3,
-            a: Math.random() * 0.6 + 0.15,
-            tw: Math.random() * Math.PI * 2
-        }));
+        // Stars — parallax layers, slow drift
+        const STAR_COUNT = 280;
+        const stars = Array.from({ length: STAR_COUNT }, () => {
+            const layer = Math.random(); // 0=far/slow, 1=near/fast
+            return {
+                x: Math.random(), y: Math.random(),
+                r: 0.3 + layer * 1.8,
+                a: 0.35 + layer * 0.55,
+                tw: Math.random() * Math.PI * 2,
+                vx: (Math.random() - 0.5) * (0.000015 + layer * 0.00008),
+                vy: (Math.random() - 0.5) * (0.000010 + layer * 0.00005),
+                layer
+            };
+        });
+
+        // Shooting stars — multiple can be active at once
+        const shoots = [];
+        let nextShoot = 600 + Math.random() * 1200;
 
         // Geometry nodes — fewer, no shadowBlur
         const GEO = Array.from({ length: 12 }, () => ({
@@ -511,14 +521,85 @@
             // nebula (single drawImage — cheap)
             ctx.drawImage(nebulaCanvas, 0, 0);
 
-            // stars — no shadowBlur, just globalAlpha twinkle
-            ctx.fillStyle = '#ffffff';
+            // ---- Stars: drift + twinkle ----
+            nextShoot -= 16;
+            if (nextShoot <= 0) {
+                // random spawn edge: top, left, or top-right corner area
+                const edge = Math.floor(Math.random() * 3);
+                let sx, sy, angle;
+                if (edge === 0) {
+                    // top edge → moves down-right
+                    sx = Math.random();
+                    sy = 0;
+                    angle = (20 + Math.random() * 40) * Math.PI / 180;
+                } else if (edge === 1) {
+                    // left edge → moves right-down
+                    sx = 0;
+                    sy = Math.random() * 0.6;
+                    angle = (-20 + Math.random() * 40) * Math.PI / 180;
+                } else {
+                    // top-right → moves down-left
+                    sx = 0.6 + Math.random() * 0.4;
+                    sy = 0;
+                    angle = Math.PI - (20 + Math.random() * 40) * Math.PI / 180;
+                }
+                const speed = 0.009 + Math.random() * 0.008;
+                shoots.push({
+                    x: sx, y: sy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1.0, tail: [],
+                    bright: 0.6 + Math.random() * 0.4
+                });
+                nextShoot = 500 + Math.random() * 1000;
+            }
+
             stars.forEach(s => {
-                ctx.globalAlpha = s.a * (0.55 + Math.sin(t * 0.0008 + s.tw) * 0.45);
+                // drift
+                s.x += s.vx; s.y += s.vy;
+                if (s.x < 0) s.x = 1; if (s.x > 1) s.x = 0;
+                if (s.y < 0) s.y = 1; if (s.y > 1) s.y = 0;
+
+                const tw = 0.55 + Math.sin(t * 0.0009 + s.tw) * 0.45;
+                ctx.globalAlpha = s.a * tw;
+                if (s.r > 1.5) { ctx.shadowBlur = 5; ctx.shadowColor = '#aaddff'; }
+                ctx.fillStyle = s.r > 1.8 ? '#cceeff' : '#ffffff';
                 ctx.beginPath();
                 ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.shadowBlur = 0;
             });
+
+            // ---- Shooting stars ----
+            for (let i = shoots.length - 1; i >= 0; i--) {
+                const sh = shoots[i];
+                sh.tail.push({ x: sh.x, y: sh.y });
+                if (sh.tail.length > 24) sh.tail.shift();
+                sh.x += sh.vx; sh.y += sh.vy;
+                sh.life -= 0.010;
+                if (sh.life <= 0 || sh.x < -0.1 || sh.x > 1.1 || sh.y > 1.1) { shoots.splice(i, 1); continue; }
+
+                sh.tail.forEach((pt, idx) => {
+                    const prog = idx / sh.tail.length;
+                    ctx.globalAlpha = prog * sh.life * sh.bright * 0.75;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = prog * 2.0;
+                    if (idx > 0) {
+                        const prev = sh.tail[idx - 1];
+                        ctx.beginPath();
+                        ctx.moveTo(prev.x * W, prev.y * H);
+                        ctx.lineTo(pt.x * W, pt.y * H);
+                        ctx.stroke();
+                    }
+                });
+                ctx.globalAlpha = sh.life * sh.bright;
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 10; ctx.shadowColor = '#aaeeff';
+                ctx.beginPath();
+                ctx.arc(sh.x * W, sh.y * H, 1.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
             ctx.globalAlpha = 1;
 
             // geometry lines — batch all into one path per alpha level is expensive;
@@ -678,8 +759,8 @@
             cx.stroke();
             cx.restore();
 
-            // ---- Inner light fill ----
-            const ig = cx.createRadialGradient(mx, my - ringR * 0.1, 0, mx, my, ringR);
+            // ---- Inner light fill — centered exactly on cursor ----
+            const ig = cx.createRadialGradient(mx, my, 0, mx, my, ringR);
             ig.addColorStop(0,   `rgba(220,250,255,${0.06 + pulse * 0.50})`);
             ig.addColorStop(0.4, `rgba(0,210,255,${0.02 + pulse * 0.22})`);
             ig.addColorStop(1,   'rgba(0,0,0,0)');
@@ -688,20 +769,7 @@
             cx.arc(mx, my, ringR, 0, Math.PI * 2);
             cx.fill();
 
-            // ---- Specular glint ----
-            const sx = mx - ringR * 0.25, sy = my - ringR * 0.28;
-            const sg = cx.createRadialGradient(sx, sy, 0, sx, sy, ringR * 0.48);
-            sg.addColorStop(0,   `rgba(255,255,255,${0.18 + pulse * 0.52})`);
-            sg.addColorStop(1,   'rgba(255,255,255,0)');
-            cx.save();
-            cx.beginPath();
-            cx.arc(mx, my, ringR * 0.94, 0, Math.PI * 2);
-            cx.clip();
-            cx.fillStyle = sg;
-            cx.fillRect(mx - ringR, my - ringR, ringR * 2, ringR * 2);
-            cx.restore();
-
-            // ---- Center dot (no shadowBlur) ----
+            // ---- Center dot — exact click point ----
             const dotR = 2.5 + pulse * 3;
             const dg = cx.createRadialGradient(mx, my, 0, mx, my, dotR * 1.8);
             dg.addColorStop(0, '#ffffff');
